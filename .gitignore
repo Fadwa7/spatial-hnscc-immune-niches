@@ -1,0 +1,11 @@
+data/raw/
+data/external/
+
+results/objects/
+
+.Rhistory
+.RData
+.Rproj.user/
+
+renv/library/
+renv/staging/
