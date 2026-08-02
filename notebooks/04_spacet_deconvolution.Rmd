@@ -1,0 +1,1031 @@
+---
+title: "HNSCC Spatial Transctomics -SpaCET deconvolution "
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(SpaCET)
+
+
+here::i_am("notebooks/04_spacet_deconvolution.Rmd")
+
+visium_path_17 <- here("data", "raw", "17B5776-1_STonly", "17B5776-1-STonly" )
+# Verify that the required inputs are present
+file.exists(
+  file.path(
+    visium_path_17,
+    "filtered_feature_bc_matrix.h5"
+  )
+)
+
+dir.exists(
+  file.path(
+    visium_path_17,
+    "spatial"
+  )
+)
+
+```
+
+```{r}
+# Create the SpaCET object from the visium output 
+
+spacet_17 <- create.SpaCET.object.10X(
+  visiumPath = visium_path_17,
+  organism = "human"
+)
+
+# Inspect the imported expression matrix 
+
+dim(spacet_17@input$counts)
+
+```
+
+```{r}
+
+# Record the number of spots bedore SpaCET quality control 
+n_spots_before_spacet_qc <- ncol(spacet_17@input$counts)
+
+# Remove spots with fewer than 200 detected genes 
+spacet_17 <- SpaCET.quality.control(
+  spacet_17, 
+  min.genes = 200
+)
+
+# Check the number of retained spots 
+n_spots_after_spacet_qc <- ncol(spacet_17@input$counts)
+
+c(before = n_spots_before_spacet_qc, after=n_spots_after_spacet_qc)
+
+# Visualization 
+
+SpaCET.visualize.spatialFeature(
+  spacet_17,
+  spatialType = "QualityControl",
+  spatialFeatures = c("UMI", "Gene"),
+  imageBg = TRUE,
+  imageSize = "CompleteImage"
+) 
+```
+```{r}
+
+# Load the built-in cancer signature dictionary 
+
+load(
+  system.file(
+    "extdata",
+    "cancerDictionary.rda",
+    package = "SpaCET"
+  )
+)
+
+cancer_types <- unique(
+  c(names(cancerDictionary$CNA), 
+    names(cancerDictionary$expr)
+    )
+)
+
+cancer_types <- sub(pattern = "^[^_]+_",
+                    replacement = "",
+                    x = cancer_types)
+
+
+"HNSC" %in% cancer_types
+```
+
+```{r}
+spacet_17 <- SpaCET.deconvolution(
+  SpaCET_obj = spacet_17,
+  cancerType = "HNSC",
+  coreNo = 1
+)
+
+dim(spacet_17@results$deconvolution$propMat)
+
+rownames(
+  spacet_17@results$deconvolution$propMat
+)
+
+# Visualize major cell fractions in a 2 x 2 layout
+SpaCET.visualize.spatialFeature(
+  spacet_17,
+  spatialType = "CellFraction",
+  spatialFeatures = c(
+    "Malignant",
+    "CAF",
+    "T CD8",
+    "Macrophage"
+  ),
+  imageBg = TRUE,
+  imageSize = "CaptureArea",
+  sameScaleForFraction = FALSE,
+  pointSize = 0.4,
+  nrow = 2
+)
+
+saveRDS(
+  spacet_17,
+  here(
+    "results",
+    "objects",
+    "17B5776_spacet_deconvolution.rds"
+  )
+)
+```
+
+```{r}
+# Path to the second Space Ranger output
+visium_path_19 <- here(
+  "data",
+  "raw",
+  "19h1257-1_STonly",
+  "19h1257-1_v3"
+)
+
+# Create the SpaCET object
+spacet_19 <- create.SpaCET.object.10X(
+  visiumPath = visium_path_19,
+  organism = "human"
+)
+
+# Record the initial number of spots
+n_spots_before_spacet_qc_19 <- ncol(
+  spacet_19@input$counts
+)
+
+# Remove spots with fewer than 200 detected genes
+spacet_19 <- SpaCET.quality.control(
+  spacet_19,
+  min.genes = 200
+)
+
+n_spots_after_spacet_qc_19 <- ncol(
+  spacet_19@input$counts
+)
+
+c(
+  before = n_spots_before_spacet_qc_19,
+  after = n_spots_after_spacet_qc_19
+)
+
+
+# Estimate malignant, immune and stromal fractions
+spacet_19 <- SpaCET.deconvolution(
+  SpaCET_obj = spacet_19,
+  cancerType = "HNSC",
+  coreNo = 1
+)
+```
+
+```{r}
+dim(spacet_19@results$deconvolution$propMat)
+
+rownames(
+  spacet_19@results$deconvolution$propMat
+)
+
+# Visualize major cell fractions in a 2 x 2 layout
+SpaCET.visualize.spatialFeature(
+  spacet_19,
+  spatialType = "CellFraction",
+  spatialFeatures = c(
+    "Malignant",
+    "CAF",
+    "Endothelial",
+    "Plasma"
+  ),
+  imageBg = TRUE,
+  imageSize = "CaptureArea",
+  sameScaleForFraction = FALSE,
+  pointSize = 0.4,
+  nrow = 2
+)
+
+# Save the completed SpaCET deconvolution object
+saveRDS(
+  spacet_19,
+  here(
+    "results",
+    "objects",
+    "19H1257_spacet_deconvolution.rds"
+  )
+)
+```
+
+
+```{r}
+# Load completed SpaCET objects
+spacet_17 <- readRDS(
+  here(
+    "results",
+    "objects",
+    "17B5776_spacet_deconvolution.rds"
+  )
+)
+
+spacet_19 <- readRDS(
+  here(
+    "results",
+    "objects",
+    "19H1257_spacet_deconvolution.rds"
+  )
+)
+```
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(tibble)
+
+# Define the major cell lineages
+major_lineages <- c(
+  "Malignant",
+  "CAF",
+  "Endothelial",
+  "Plasma",
+  "B cell",
+  "T CD4",
+  "T CD8",
+  "NK",
+  "cDC",
+  "pDC",
+  "Macrophage",
+  "Mast",
+  "Neutrophil",
+  "Unidentifiable"
+)
+
+# Extract fractions for sample 17B5776
+mat_17 <- t(
+  spacet_17@results$deconvolution$propMat[
+    major_lineages,
+    ,
+    drop = FALSE
+  ]
+)
+
+fractions_17 <- data.frame(
+  spot = rownames(mat_17),
+  mat_17,
+  sample = "17B5776",
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Extract fractions for sample 19H1257
+mat_19 <- t(
+  spacet_19@results$deconvolution$propMat[
+    major_lineages,
+    ,
+    drop = FALSE
+  ]
+)
+
+fractions_19 <- data.frame(
+  spot = rownames(mat_19),
+  mat_19,
+  sample = "19H1257",
+  row.names = NULL,
+  check.names = FALSE
+)
+
+# Combine both samples into one table
+fractions_combined <- rbind(
+  fractions_17,
+  fractions_19
+)
+
+# Check the final table
+dim(fractions_combined)
+
+table(fractions_combined$sample)
+
+```
+
+```{r}
+# Identify the cell fraction columns
+cell_types <- setdiff(
+  colnames(fractions_combined),
+  c("spot", "sample")
+)
+
+# Calculate descriptive statistics for each sample and cell type
+summary_by_sample <- do.call(
+  rbind,
+  lapply(
+    split(fractions_combined, fractions_combined$sample),
+    function(sample_data) {
+
+      do.call(
+        rbind,
+        lapply(
+          cell_types,
+          function(cell_type) {
+
+            values <- sample_data[[cell_type]]
+
+            data.frame(
+              sample = unique(sample_data$sample),
+              cell_type = cell_type,
+              mean = mean(values, na.rm = TRUE),
+              median = median(values, na.rm = TRUE),
+              q1 = as.numeric(
+                quantile(values, 0.25, na.rm = TRUE)
+              ),
+              q3 = as.numeric(
+                quantile(values, 0.75, na.rm = TRUE)
+              )
+            )
+          }
+        )
+      )
+    }
+  )
+)
+
+rownames(summary_by_sample) <- NULL
+
+summary_by_sample
+```
+
+```{r}
+library(ggplot2)
+
+# Select biologically relevant compartments
+selected_cell_types <- c(
+  "Malignant",
+  "CAF",
+  "Endothelial",
+  "B cell",
+  "T CD4",
+  "T CD8",
+  "Macrophage"
+)
+
+# Keep only the selected compartments
+plot_data <- summary_by_sample[
+  summary_by_sample$cell_type %in% selected_cell_types,
+]
+
+# Control the order of the panels
+plot_data$cell_type <- factor(
+  plot_data$cell_type,
+  levels = selected_cell_types
+)
+
+# Compare median cell fractions between samples
+cell_fraction_plot <- ggplot(
+  plot_data,
+  aes(
+    x = sample,
+    y = median,
+    fill = sample
+  )
+) +
+  geom_col(
+    width = 0.7,
+    show.legend = FALSE
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = q1,
+      ymax = q3
+    ),
+    width = 0.15
+  ) +
+  facet_wrap(
+    ~ cell_type,
+    scales = "free_y",
+    ncol = 4
+  ) +
+  labs(
+    title = "Major cell fractions across HNSCC samples",
+    x = NULL,
+    y = "Median estimated fraction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    ),
+    strip.text = element_text(
+      face = "bold"
+    )
+  )
+
+cell_fraction_plot
+```
+
+```{r}
+ggsave(
+  filename = here(
+    "results",
+    "figures",
+    "SpaCET_major_cell_fractions_comparison.png"
+  ),
+  plot = cell_fraction_plot,
+  width = 11,
+  height = 7,
+  dpi = 300
+)
+```
+
+```{r}
+
+# Define major immune lineages
+immune_lineages <- c(
+  "Plasma",
+  "B cell",
+  "T CD4",
+  "T CD8",
+  "NK",
+  "cDC",
+  "pDC",
+  "Macrophage",
+  "Mast",
+  "Neutrophil"
+)
+
+# Calculate the total immune fraction for each spot
+fractions_combined$immune_fraction <- rowSums(
+  fractions_combined[
+    ,
+    immune_lineages,
+    drop = FALSE
+  ],
+  na.rm = TRUE
+)
+
+# Summarize the immune fraction by sample
+immune_summary <- do.call(
+  rbind,
+  lapply(
+    split(fractions_combined, fractions_combined$sample),
+    function(sample_data) {
+      data.frame(
+        sample = unique(sample_data$sample),
+        median = median(
+          sample_data$immune_fraction,
+          na.rm = TRUE
+        ),
+        q1 = as.numeric(
+          quantile(
+            sample_data$immune_fraction,
+            0.25,
+            na.rm = TRUE
+          )
+        ),
+        q3 = as.numeric(
+          quantile(
+            sample_data$immune_fraction,
+            0.75,
+            na.rm = TRUE
+          )
+        )
+      )
+    }
+  )
+)
+
+rownames(immune_summary) <- NULL
+
+immune_summary
+```
+
+```{r}
+
+library(ggplot2)
+
+immune_fraction_plot <- ggplot(
+  fractions_combined,
+  aes(
+    x = sample,
+    y = immune_fraction,
+    fill = sample
+  )
+) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.6,
+    show.legend = FALSE
+  ) +
+  geom_boxplot(
+    width = 0.15,
+    outlier.shape = NA,
+    show.legend = FALSE
+  ) +
+  labs(
+    title = "Spatial immune fraction across HNSCC samples",
+    x = NULL,
+    y = "Estimated immune fraction"
+  ) +
+  theme_minimal()
+
+immune_fraction_plot
+
+```
+```{r}
+# Calculate and add the total immune fraction for 17B5776
+prop_17 <- spacet_17@results$deconvolution$propMat
+
+immune_total_17 <- colSums(
+  prop_17[
+    immune_lineages,
+    ,
+    drop = FALSE
+  ],
+  na.rm = TRUE
+)
+
+if ("Immune total" %in% rownames(prop_17)) {
+  prop_17["Immune total", ] <- immune_total_17
+} else {
+  prop_17 <- rbind(
+    prop_17,
+    "Immune total" = immune_total_17
+  )
+}
+
+spacet_17@results$deconvolution$propMat <- prop_17
+```
+
+```{r}
+# Calculate and add the total immune fraction for 19H1257
+prop_19 <- spacet_19@results$deconvolution$propMat
+
+immune_total_19 <- colSums(
+  prop_19[
+    immune_lineages,
+    ,
+    drop = FALSE
+  ],
+  na.rm = TRUE
+)
+
+if ("Immune total" %in% rownames(prop_19)) {
+  prop_19["Immune total", ] <- immune_total_19
+} else {
+  prop_19 <- rbind(
+    prop_19,
+    "Immune total" = immune_total_19
+  )
+}
+
+spacet_19@results$deconvolution$propMat <- prop_19
+
+tail(
+  rownames(
+    spacet_17@results$deconvolution$propMat
+  )
+)
+
+
+```
+```{r}
+
+SpaCET.visualize.spatialFeature(
+  spacet_17,
+  spatialType = "CellFraction",
+  spatialFeatures = "Immune total",
+  imageBg = TRUE,
+  imageSize = "CaptureArea",
+  pointSize = 0.4
+)
+
+```
+
+```{r}
+"Immune total" %in% rownames(
+  spacet_19@results$deconvolution$propMat
+)
+
+
+SpaCET.visualize.spatialFeature(
+  spacet_19,
+  spatialType = "CellFraction",
+  spatialFeatures = "Immune total",
+  imageBg = TRUE,
+  imageSize = "CaptureArea",
+  pointSize = 0.4
+)
+```
+```{r}
+# Reset the immune status
+fractions_combined$immune_status <- NA_character_
+
+# Classify spots independently within each sample
+for (sample_id in unique(fractions_combined$sample)) {
+
+  sample_spots <- fractions_combined$sample == sample_id
+
+  thresholds <- quantile(
+    fractions_combined$immune_fraction[sample_spots],
+    probs = c(0.25, 0.75),
+    na.rm = TRUE,
+    names = FALSE
+  )
+
+  fractions_combined$immune_status[sample_spots] <- ifelse(
+    fractions_combined$immune_fraction[sample_spots] <= thresholds[1],
+    "Immune-low",
+    ifelse(
+      fractions_combined$immune_fraction[sample_spots] >= thresholds[2],
+      "Immune-high",
+      "Intermediate"
+    )
+  )
+}
+
+# Check the corrected classification
+table(
+  fractions_combined$sample,
+  fractions_combined$immune_status
+)
+
+names(spacet_17@input)
+head(spacet_17@input$spotCoordinates)
+```
+
+```{r}
+# Extract spatial coordinates
+coordinates_17 <- spacet_17@input$spotCoordinates
+
+# Extract immune status for this sample
+status_17 <- fractions_combined[
+  fractions_combined$sample == "17B5776",
+  c("spot", "immune_status")
+]
+
+# Build the spatial plotting table
+immune_map_17 <- data.frame(
+  spot = rownames(coordinates_17),
+  x = coordinates_17$pixel_col,
+  y = coordinates_17$pixel_row,
+  immune_status = status_17$immune_status[
+    match(
+      rownames(coordinates_17),
+      status_17$spot
+    )
+  ]
+)
+
+sum(is.na(immune_map_17$immune_status))
+```
+
+```{r}
+# Extract spatial coordinates
+coordinates_19 <- spacet_19@input$spotCoordinates
+
+# Extract immune status for this sample
+status_19 <- fractions_combined[
+  fractions_combined$sample == "19H1257",
+  c("spot", "immune_status")
+]
+
+# Build the spatial plotting table
+immune_map_19 <- data.frame(
+  spot = rownames(coordinates_19),
+  x = coordinates_19$pixel_col,
+  y = coordinates_19$pixel_row,
+  immune_status = status_19$immune_status[
+    match(
+      rownames(coordinates_19),
+      status_19$spot
+    )
+  ]
+)
+
+sum(is.na(immune_map_19$immune_status))
+```
+
+```{r}
+library(ggplot2)
+
+immune_map_17$immune_status <- factor(
+  immune_map_17$immune_status,
+  levels = c(
+    "Immune-low",
+    "Intermediate",
+    "Immune-high"
+  )
+)
+
+immune_status_plot_17 <- ggplot(
+  immune_map_17,
+  aes(
+    x = x,
+    y = y,
+    color = immune_status
+  )
+) +
+  geom_point(
+    size = 1.4
+  ) +
+  scale_y_reverse() +
+  coord_fixed() +
+  scale_color_manual(
+    values = c(
+      "Immune-low" = "#3B4CC0",
+      "Intermediate" = "#BDBDBD",
+      "Immune-high" = "#B40426"
+    ),
+    drop = FALSE
+  ) +
+  labs(
+    title = "Spatial immune niches — 17B5776",
+    color = "Immune status"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold"
+    ),
+    legend.position = "right"
+  )
+
+immune_status_plot_17
+```
+
+
+```{r}
+immune_map_19$immune_status <- factor(
+  immune_map_19$immune_status,
+  levels = c(
+    "Immune-low",
+    "Intermediate",
+    "Immune-high"
+  )
+)
+
+immune_status_plot_19 <- ggplot(
+  immune_map_19,
+  aes(
+    x = x,
+    y = y,
+    color = immune_status
+  )
+) +
+  geom_point(
+    size = 1.4
+  ) +
+  scale_y_reverse() +
+  coord_fixed() +
+  scale_color_manual(
+    values = c(
+      "Immune-low" = "#3B4CC0",
+      "Intermediate" = "#BDBDBD",
+      "Immune-high" = "#B40426"
+    ),
+    drop = FALSE
+  ) +
+  labs(
+    title = "Spatial immune niches — 19H1257",
+    color = "Immune status"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(
+      hjust = 0.5,
+      face = "bold"
+    ),
+    legend.position = "right"
+  )
+
+immune_status_plot_19
+```
+
+```{r}
+# Keep only immune-high spots
+immune_high_spots <- fractions_combined[
+  fractions_combined$immune_status == "Immune-high",
+]
+
+# Calculate immune composition separately for each sample
+immune_niche_composition <- do.call(
+  rbind,
+  lapply(
+    split(immune_high_spots, immune_high_spots$sample),
+    function(sample_data) {
+
+      # Divide each immune lineage by the total immune fraction
+      relative_composition <- sweep(
+        as.matrix(
+          sample_data[
+            ,
+            immune_lineages,
+            drop = FALSE
+          ]
+        ),
+        MARGIN = 1,
+        STATS = sample_data$immune_fraction,
+        FUN = "/"
+      )
+
+      data.frame(
+        sample = unique(sample_data$sample),
+        cell_type = immune_lineages,
+        mean_relative_share = colMeans(
+          relative_composition,
+          na.rm = TRUE
+        )
+      )
+    }
+  )
+)
+
+rownames(immune_niche_composition) <- NULL
+
+immune_niche_composition
+```
+
+```{r}
+immune_composition_plot <- ggplot(
+  immune_niche_composition,
+  aes(
+    x = sample,
+    y = mean_relative_share,
+    fill = cell_type
+  )
+) +
+  geom_col() +
+  labs(
+    title = "Composition of immune-high spatial niches",
+    x = NULL,
+    y = "Mean relative share",
+    fill = "Immune lineage"
+  ) +
+  theme_minimal()
+
+immune_composition_plot
+```
+
+```{r}
+# Convert relative shares to percentages
+immune_niche_composition$percentage <- round(
+  immune_niche_composition$mean_relative_share * 100,
+  1
+)
+
+# Sort cell types from the largest to the smallest contribution
+immune_niche_composition <- immune_niche_composition[
+  order(
+    immune_niche_composition$sample,
+    -immune_niche_composition$percentage
+  ),
+]
+
+immune_niche_composition[
+  ,
+  c("sample", "cell_type", "percentage")
+]
+```
+```{r}
+# Create output directories if needed
+dir.create(
+  here("results", "tables"),
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+dir.create(
+  here("results", "figures"),
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+dir.create(
+  here("results", "objects"),
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+# Save updated SpaCET objects
+saveRDS(
+  spacet_17,
+  here(
+    "results",
+    "objects",
+    "17B5776_spacet_final.rds"
+  )
+)
+
+saveRDS(
+  spacet_19,
+  here(
+    "results",
+    "objects",
+    "19H1257_spacet_final.rds"
+  )
+)
+
+# Save analysis tables
+write.csv(
+  fractions_combined,
+  here(
+    "results",
+    "tables",
+    "spacet_spot_cell_fractions.csv"
+  ),
+  row.names = FALSE
+)
+
+write.csv(
+  summary_by_sample,
+  here(
+    "results",
+    "tables",
+    "spacet_cell_fraction_summary.csv"
+  ),
+  row.names = FALSE
+)
+
+write.csv(
+  immune_summary,
+  here(
+    "results",
+    "tables",
+    "spacet_immune_fraction_summary.csv"
+  ),
+  row.names = FALSE
+)
+
+write.csv(
+  immune_niche_composition,
+  here(
+    "results",
+    "tables",
+    "spacet_immune_high_niche_composition.csv"
+  ),
+  row.names = FALSE
+)
+
+# Save figures
+ggsave(
+  here(
+    "results",
+    "figures",
+    "spacet_major_cell_fractions.png"
+  ),
+  plot = cell_fraction_plot,
+  width = 11,
+  height = 7,
+  dpi = 300
+)
+
+ggsave(
+  here(
+    "results",
+    "figures",
+    "spacet_immune_fraction_distribution.png"
+  ),
+  plot = immune_fraction_plot,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+
+ggsave(
+  here(
+    "results",
+    "figures",
+    "17B5776_immune_niches.png"
+  ),
+  plot = immune_status_plot_17,
+  width = 8,
+  height = 7,
+  dpi = 300
+)
+
+ggsave(
+  here(
+    "results",
+    "figures",
+    "19H1257_immune_niches.png"
+  ),
+  plot = immune_status_plot_19,
+  width = 8,
+  height = 7,
+  dpi = 300
+)
+
+ggsave(
+  here(
+    "results",
+    "figures",
+    "spacet_immune_high_niche_composition.png"
+  ),
+  plot = immune_composition_plot,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
+```
+
+
+
+
+

@@ -1,6 +1,454 @@
 ---
-title: "Untitled"
+title: "HNSCC Spatial Transcriptomics - Cross-sample comparison"
 output: html_document
-date: "2026-08-01"
+
 ---
+
+# Objective: 
+This notebook compares the spatial transcriptomic profiles of samples
+17B5776 and 19H1257 to identify shared and sample-specific transcriptional
+programs.
+
+```{r}
+library(Seurat)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+library(here)
+
+here::i_am("notebooks/03_cross_sample_comparison.Rmd")
+```
+
+```{r}
+hnscc_17 <- readRDS(here("results", "objects", "17B5776_clustered_res0.6.rds"))
+
+hnscc_19 <- readRDS(here("results", "objects", "19H1257_clustered_res0.8.rds"))
+
+
+## Dimension 
+dim(hnscc_17)
+dim(hnscc_19)
+
+Assays(hnscc_17)
+Assays(hnscc_19)
+
+DefaultAssay(hnscc_17)
+DefaultAssay(hnscc_19)
+
+colnames(hnscc_17@meta.data)
+colnames(hnscc_19@meta.data)
+
+# Harmonize metadata
+hnscc_17$sample_id <- "17B5776"
+hnscc_19$sample_id <- "19H1257"
+
+hnscc_17$cluster_individual <- as.character(
+  hnscc_17$SCT_snn_res.0.6
+)
+
+hnscc_19$cluster_individual <- as.character(
+  hnscc_19$SCT_snn_res.0.8
+)
+
+table(hnscc_17$sample_id)
+table(hnscc_19$sample_id)
+
+table(hnscc_17$cluster_individual)
+table(hnscc_19$cluster_individual)
+```
+
+```{r}
+# Merge both spatial samples into one Seurat Object 
+
+hnscc_merged <- merge(
+  x= hnscc_17,
+  y = hnscc_19,
+  add.cell.ids = c("17B5776", "19H1257"),
+  project = "HNSCC_cross_sample",
+  merge.data = TRUE
+)
+  
+dim(hnscc_merged)
+table(hnscc_merged$sample_id)
+
+Assays(hnscc_merged)
+
+Images(hnscc_merged)
+  
+  
+## Commun PCA 
+
+DefaultAssay(hnscc_merged) <- "SCT"
+
+# Combine variable features identified in both samples
+
+joint_features <- unique(
+  c(VariableFeatures(hnscc_17), 
+    VariableFeatures(hnscc_19)
+    )
+)
+  
+VariableFeatures(hnscc_merged) <- joint_features
+
+length(joint_features)
+  
+# Run a joint PCA
+hnscc_merged <- RunPCA(
+  object = hnscc_merged,
+  assay = "SCT",
+  features = joint_features,
+  npcs = 50,
+  verbose = FALSE
+)
+
+ElbowPlot(
+  hnscc_merged,
+  ndims = 50
+)
+  
+```
+
+```{r}
+# Build the shared neighbor graph 
+
+hnscc_merged <- FindNeighbors(
+  hnscc_merged, reduction = "pca", dims = 1:20, verbose = FALSE
+)
+
+# Compute a joint UMAP
+hnscc_merged <- RunUMAP(
+  hnscc_merged,
+  reduction = "pca",
+  dims = 1:20,
+  seed.use = 42,
+  verbose = FALSE
+)
+
+# Visualize sample distribution in the joint space
+DimPlot(
+  hnscc_merged,
+  reduction = "umap",
+  group.by = "sample_id"
+)
+
+packageVersion("Seurat")
+class(hnscc_merged[["SCT"]])
+levels(hnscc_merged[["SCT"]])
+
+```
+
+```{r}
+# Integrate the two samples using reciprocal PCA
+hnscc_integrated <- IntegrateLayers(
+  object = hnscc_merged,
+  method = RPCAIntegration,
+  orig.reduction = "pca",
+  new.reduction = "integrated.rpca",
+  assay = "SCT",
+  normalization.method = "SCT",
+  dims = 1:20,
+  verbose = FALSE
+)
+
+Reductions(hnscc_integrated)
+```
+```{r}
+# Build a neighbor graph from the RPCA-integrated representation
+hnscc_integrated <- FindNeighbors(
+  object = hnscc_integrated,
+  reduction = "integrated.rpca",
+  dims = 1:20,
+  graph.name = c("rpca_nn", "rpca_snn"),
+  verbose = FALSE
+)
+
+# Compute an integrated UMAP
+hnscc_integrated <- RunUMAP(
+  object = hnscc_integrated,
+  reduction = "integrated.rpca",
+  dims = 1:20,
+  reduction.name = "umap.rpca",
+  reduction.key = "UMAPRPCA_",
+  seed.use = 42,
+  verbose = FALSE
+)
+
+# Visualize the samples after integration
+DimPlot(
+  hnscc_integrated,
+  reduction = "umap.rpca",
+  group.by = "sample_id"
+)
+```
+
+### Integrated and non-integrated representations
+
+The non-integrated UMAP was computed from the joint PCA and preserved all sources of variation, including biological differences between patients and potential technical effects. In this representation, the two samples were strongly separated.
+
+RPCA integration was then applied to identify comparable transcriptional profiles across samples and reduce sample-driven separation. The integrated UMAP showed increased mixing between samples, while some patient-specific structure remained.
+
+Both representations were retained: the non-integrated space to preserve global inter-patient differences, and the RPCA-integrated space to investigate shared transcriptional programs and perform joint clustering.
+
+
+
+```{r}
+library(clustree)
+
+# Verify the available neighbor graphs 
+Graphs(hnscc_integrated)
+
+# Test several clustering resolutions
+hnscc_integrated <- FindClusters(
+  object = hnscc_integrated,
+  graph.name = "rpca_snn",
+  resolution = c(0.2, 0.4, 0.6, 0.8, 1.0),
+  random.seed = 42,
+  verbose = FALSE
+)
+
+resolution_columns <- paste0(
+  "rpca_snn_res.",
+  c(0.2, 0.4, 0.6, 0.8, 1.0)
+)
+
+sapply(
+  resolution_columns,
+  function(column_name) {
+    length(unique(hnscc_integrated[[column_name, drop = TRUE]]))
+  }
+)
+
+clustree(
+  hnscc_integrated,
+  prefix = "rpca_snn_res."
+)
+```
+
+
+```{r}
+
+# Use resolution 0.6 for the joint clustering
+Idents(hnscc_integrated) <- "rpca_snn_res.0.6"
+
+DimPlot(
+  hnscc_integrated,
+  reduction = "umap.rpca",
+  label = TRUE,
+  repel = TRUE
+)
+
+DimPlot(
+  hnscc_integrated,
+  reduction = "umap.rpca",
+  group.by = "rpca_snn_res.0.6",
+  split.by = "sample_id",
+  label = TRUE,
+  repel = TRUE
+)
+```
+
+```{r}
+# Count spots from each sample within every joint cluster
+cluster_sample_counts <- table(
+  cluster = hnscc_integrated$rpca_snn_res.0.6,
+  sample = hnscc_integrated$sample_id
+)
+
+cluster_sample_counts
+```
+
+
+### Sample composition of integrated clusters
+
+Most integrated clusters contained spots from both samples, indicating the presence of shared transcriptional programs.
+
+Clusters 1, 5, and 6 showed a relatively balanced contribution from both patients. Other clusters were shared but enriched in one sample. Clusters 0 and 13 were predominantly associated with 19H1257, whereas clusters 11, 14, and 15 were predominantly associated with 17B5776.
+
+The integrated clustering therefore preserved both shared and patient-specific transcriptional structures.
+```{r}
+# Set the integrated clusters as active identities
+DefaultAssay(hnscc_integrated) <- "SCT"
+Idents(hnscc_integrated) <- "rpca_snn_res.0.6"
+
+# Prepare the merged SCT assay for differential expression
+hnscc_integrated <- PrepSCTFindMarkers(
+  object = hnscc_integrated,
+  assay = "SCT",
+  verbose = TRUE
+)
+
+
+# Identify positive marker genes for each integrated cluster
+markers_integrated <- FindAllMarkers(
+  object = hnscc_integrated,
+  assay = "SCT",
+  only.pos = TRUE,
+  min.pct = 0.10,
+  logfc.threshold = 0.25,
+  test.use = "wilcox",
+  verbose = FALSE
+)
+
+# Select the top five markers per integrated cluster
+top_markers_integrated <- markers_integrated %>%
+  filter(p_val_adj < 0.05) %>%
+  group_by(cluster) %>%
+  slice_max(
+    order_by = avg_log2FC,
+    n = 5,
+    with_ties = FALSE
+  ) %>%
+  ungroup()
+
+top_markers_integrated %>%
+  select(
+    cluster,
+    gene,
+    avg_log2FC,
+    pct.1,
+    pct.2,
+    p_val_adj
+  )
+
+# Export all integrated-cluster markers
+write.table(
+  markers_integrated,
+  file = here(
+    "results",
+    "tables",
+    "integrated_cluster_markers_res0.6.tsv"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+# Export the top five markers per cluster
+write.table(
+  top_markers_integrated,
+  file = here(
+    "results",
+    "tables",
+    "integrated_cluster_top5_markers_res0.6.tsv"
+  ),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+```
+
+
+```{r}
+# Canonical markers for broad tissue and immune compartments
+canonical_markers <- c(
+  # Epithelial
+  "EPCAM", "KRT5", "KRT14", "KRT19",
+
+  # B cells and plasma cells
+  "MS4A1", "CD79A", "JCHAIN", "MZB1",
+
+  # T and NK cells
+  "CD3D", "CD3E", "NKG7", "GNLY",
+
+  # Myeloid cells
+  "LST1", "TYROBP", "FCER1G", "CD68",
+
+  # Fibroblasts and endothelial cells
+  "COL1A1", "DCN", "DPT", "PECAM1", "VWF",
+
+  # Plasmacytoid dendritic cells
+  "CLEC4C", "LILRA4", "GZMB"
+)
+
+DotPlot(
+  hnscc_integrated,
+  assay = "SCT",
+  features = canonical_markers,
+  group.by = "rpca_snn_res.0.6"
+) +
+  RotatedAxis()
+```
+
+### Broad compartment characterization
+
+Canonical marker expression supported the identification of broad epithelial, immune and stromal compartments within the integrated clustering.
+
+Several clusters showed mixed marker profiles, which is expected because each Visium spot may contain multiple cell types. Cluster identities were therefore interpreted as transcriptionally enriched spatial domains rather than pure cell populations.
+
+```{r}
+# Set the joint clusters as active identities
+hnscc_integrated$cluster_integrated <- factor(
+  hnscc_integrated$rpca_snn_res.0.6
+)
+
+Idents(hnscc_integrated) <- "cluster_integrated"
+
+
+Images(hnscc_integrated)
+# Display integrated clusters on both tissue sections
+SpatialDimPlot(
+  object = hnscc_integrated,
+  group.by = "cluster_integrated",
+  label = TRUE,
+  repel = TRUE,
+  pt.size.factor = 1.6
+)
+
+
+
+
+
+
+
+```
+### Spatial distribution of integrated clusters
+
+Integrated clusters formed spatially coherent domains within both tissue sections.
+
+Several clusters were shared between the two samples but differed in their relative abundance and spatial organization. Other clusters showed strong sample specificity, including cluster 13 in 19H1257 and cluster 14 in 17B5776.
+
+These results indicate that the integrated analysis captured both recurrent transcriptional domains and patient-specific spatial structures.
+
+```{r}
+# Save the integrated Seurat object
+saveRDS(
+  hnscc_integrated,
+  here(
+    "results",
+    "objects",
+    "HNSCC_integrated_rpca_res0.6.rds"
+  )
+)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
