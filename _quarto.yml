@@ -1,0 +1,63 @@
+project:
+  type: website
+  output-dir: _site
+
+  render:
+    - index.qmd
+    - results.qmd
+    - methods.qmd
+    - reports/HNSCC_spatial_transcriptomics_report.Rmd
+
+  resources:
+    - reports/HNSCC_spatial_transcriptomics_report.html
+    - results/figures/*.png
+    - results/tables/*.csv
+    - results/tables/*.tsv
+
+website:
+  title: "Spatial HNSCC"
+  description: "A two-sample spatial transcriptomics study of malignant and immune compartment organization in HNSCC."
+
+  page-navigation: true
+  back-to-top-navigation: true
+
+  navbar:
+    background: primary
+    foreground: light
+
+    left:
+      - text: "Overview"
+        href: index.qmd
+
+      - text: "Results"
+        href: results.qmd
+
+      - text: "Methods"
+        href: methods.qmd
+
+    right:
+      - text: "Full scientific report"
+        href: reports/HNSCC_spatial_transcriptomics_report.html
+        icon: file-earmark-text
+
+  page-footer:
+    left: "Spatial HNSCC immune-niche portfolio project"
+    right: "Two biological samples · Descriptive analysis"
+
+format:
+  html:
+    theme:
+      light: [cosmo, styles.scss]
+      dark: [darkly, styles.scss]
+
+    toc: true
+    toc-depth: 3
+    smooth-scroll: true
+    link-external-newwindow: true
+    code-fold: false
+    code-copy: true
+    anchor-sections: true
+    lightbox: true
+
+execute:
+  freeze: true

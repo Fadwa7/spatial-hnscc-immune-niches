@@ -1,7 +1,19 @@
 ---
-title: "HNSCC Spatial Transctomics -SpaCET deconvolution "
+title: "HNSCC Spatial Transcriptomics - SpaCET Deconvolution"
 output: html_notebook
 ---
+
+# Overview
+
+This notebook uses SpaCET to estimate malignant, stromal and immune transcriptional fractions in each Visium spot from samples 17B5776 and 19H1257. It then places both samples in a common spot-level table, summarizes the estimated fractions descriptively, defines sample-relative immune niches and examines the immune-lineage composition of Immune-high spots.
+
+SpaCET deconvolution uses predefined cancer and cell-lineage expression signatures to separate the mixed transcriptomic signal observed at each spot. The resulting values are estimated transcriptional fractions, not exact cell counts. Because a Visium spot may contain multiple cells, all downstream labels describe mixed spatial niches rather than purified cell populations.
+
+The workflow is descriptive. It contains two biological samples, so differences between samples must not be interpreted as population-level effects or independent replication.
+
+## Setup and input validation
+
+**Objective.** Locate the Space Ranger output for sample 17B5776 and confirm that its filtered expression matrix and spatial metadata directory are available. These files provide spot-level counts, tissue-image information and spatial coordinates. The checks return logical indicators and do not modify the data.
 
 ```{r}
 library(here)
@@ -28,8 +40,14 @@ dir.exists(
 
 ```
 
+## SpaCET object construction and quality control: 17B5776
+
+**Objective and processing.** Import the Space Ranger output into a SpaCET object and remove spots with fewer than 200 detected genes using the existing threshold. The reported matrix dimensions and before/after spot counts document the imported data and the effect of SpaCET quality control; the spatial QC plots show where UMI and detected-gene values occur on the tissue.
+
+This threshold limits very low-complexity observations but cannot distinguish technical loss from genuinely sparse tissue. It should therefore be interpreted together with the spatial QC display.
+
 ```{r}
-# Create the SpaCET object from the visium output 
+# Create the SpaCET object from the Visium output.
 
 spacet_17 <- create.SpaCET.object.10X(
   visiumPath = visium_path_17,
@@ -44,7 +62,7 @@ dim(spacet_17@input$counts)
 
 ```{r}
 
-# Record the number of spots bedore SpaCET quality control 
+# Record the number of spots before SpaCET quality control.
 n_spots_before_spacet_qc <- ncol(spacet_17@input$counts)
 
 # Remove spots with fewer than 200 detected genes 
@@ -58,7 +76,7 @@ n_spots_after_spacet_qc <- ncol(spacet_17@input$counts)
 
 c(before = n_spots_before_spacet_qc, after=n_spots_after_spacet_qc)
 
-# Visualization 
+# Visualize the spatial distribution of QC metrics.
 
 SpaCET.visualize.spatialFeature(
   spacet_17,
@@ -93,6 +111,14 @@ cancer_types <- sub(pattern = "^[^_]+_",
 
 "HNSC" %in% cancer_types
 ```
+
+The dictionary check verifies that the built-in SpaCET cancer signatures include the HNSC entry used below. It does not assess whether the reference signatures represent every cellular state present in these sections.
+
+## SpaCET deconvolution: 17B5776
+
+**Objective and processing.** Apply the HNSC-specific SpaCET model to the quality-controlled count matrix. SpaCET uses malignant reference information together with stromal and immune lineage signatures to estimate their contributions to each mixed spot. The fraction matrix and spatial feature maps are the main outputs, and the completed object is saved for later summaries.
+
+The displayed lineages illustrate spatial variation in estimated composition. They should not be read as exact cell abundances, and apparent co-localization within a spot does not establish direct cell–cell interaction.
 
 ```{r}
 spacet_17 <- SpaCET.deconvolution(
@@ -133,6 +159,10 @@ saveRDS(
   )
 )
 ```
+
+## SpaCET deconvolution: 19H1257
+
+**Objective and processing.** Repeat the same import, 200-gene quality-control threshold and HNSC deconvolution for sample 19H1257. The output is a second SpaCET object with spot-level estimated fractions, allowing the two samples to be summarized with a consistent workflow.
 
 ```{r}
 # Path to the second Space Ranger output
@@ -213,6 +243,12 @@ saveRDS(
 )
 ```
 
+The spatial maps provide a qualitative view of the estimated compartments in 19H1257. Differences in map intensity may reflect tissue composition, RNA content or model fit; they are not direct evidence of differences in cell number.
+
+
+## Load completed deconvolution objects
+
+The saved SpaCET objects are reloaded so that the comparative summaries below can be generated without rerunning deconvolution. These objects supply the fraction matrices and spatial coordinates used in all subsequent blocks.
 
 ```{r}
 # Load completed SpaCET objects
@@ -232,6 +268,14 @@ spacet_19 <- readRDS(
   )
 )
 ```
+
+## Extract major SpaCET lineages and construct a combined spot-level table
+
+**Objective.** Create one row per spot with a sample identifier and the estimated fractions for the selected major compartments.
+
+SpaCET can report both major lineages and subordinate components within those lineages. These levels must not be added together because doing so would count overlapping hierarchy levels more than once. The explicit `major_lineages` vector therefore selects a single, non-duplicated level for downstream comparison. Each sample matrix is subset to these rows, transposed so spots become rows, and then row-bound into `fractions_combined`.
+
+The dimension and sample-frequency checks are expected to confirm that both samples are represented and that the table contains one record per retained spot. The `Unidentifiable` fraction is retained as a model-output category rather than being reassigned to a biological lineage.
 
 ```{r}
 
@@ -304,6 +348,10 @@ table(fractions_combined$sample)
 
 ```
 
+## Sample-level descriptive summaries of estimated fractions
+
+**Objective and output.** For every selected lineage, calculate the mean, median and interquartile range across spots within each sample. The resulting `summary_by_sample` table describes the distribution of model-estimated transcriptional fractions; it does not provide inferential evidence because spots within a section are spatially related and are not independent biological replicates.
+
 ```{r}
 # Identify the cell fraction columns
 cell_types <- setdiff(
@@ -349,6 +397,8 @@ rownames(summary_by_sample) <- NULL
 
 summary_by_sample
 ```
+
+The faceted plot below focuses on a subset of biologically relevant compartments and displays the spot-level median with the first and third quartiles for each sample. Free y-axis scales improve within-compartment visibility but prevent direct visual comparison of absolute heights between facets.
 
 ```{r}
 library(ggplot2)
@@ -419,6 +469,8 @@ cell_fraction_plot <- ggplot(
 cell_fraction_plot
 ```
 
+Any difference between the two bars is a descriptive difference between these particular tissue sections. With only two biological samples, it should not be generalized to HNSCC patients or interpreted as a treatment-relevant finding.
+
 ```{r}
 ggsave(
   filename = here(
@@ -432,6 +484,12 @@ ggsave(
   dpi = 300
 )
 ```
+
+## Total immune fraction per spot
+
+**Objective and calculation.** Define a single immune estimate by summing only the major immune lineages listed in `immune_lineages`: plasma cells, B cells, CD4 and CD8 T cells, NK cells, conventional and plasmacytoid dendritic cells, macrophages, mast cells and neutrophils. Subordinate SpaCET categories are intentionally excluded because adding them to their parent lineages would double-count overlapping transcriptional fractions.
+
+The output `immune_fraction` is therefore a derived sum of estimated major-lineage fractions, not an independently fitted SpaCET compartment and not an exact immune-cell count. `immune_summary` reports its median and interquartile range across spots within each sample.
 
 ```{r}
 
@@ -495,6 +553,8 @@ rownames(immune_summary) <- NULL
 immune_summary
 ```
 
+The violin and boxplot display the within-section distribution of this derived immune fraction. Their shape reflects spot heterogeneity and spatial sampling; it must not be treated as a distribution of independent patient measurements.
+
 ```{r}
 
 library(ggplot2)
@@ -527,6 +587,11 @@ immune_fraction_plot <- ggplot(
 immune_fraction_plot
 
 ```
+
+## Add the derived immune fraction to each SpaCET object
+
+The next blocks calculate the same major-lineage sum directly from each SpaCET fraction matrix and store it as `Immune total`. This makes the derived quantity available to SpaCET's spatial plotting function while preserving the original lineage estimates.
+
 ```{r}
 # Calculate and add the total immune fraction for 17B5776
 prop_17 <- spacet_17@results$deconvolution$propMat
@@ -612,6 +677,15 @@ SpaCET.visualize.spatialFeature(
   pointSize = 0.4
 )
 ```
+
+These continuous maps show where the estimated immune contribution is relatively high or low within each tissue section. They do not define discrete niches until the sample-specific classification below is applied.
+
+## Sample-specific quartile classification of immune niches
+
+**Objective and processing.** Classify spots independently within each sample using the first and third quartiles of that sample's `immune_fraction`. Spots at or below the first quartile are labelled Immune-low, spots at or above the third quartile are labelled Immune-high, and the remaining spots are Intermediate.
+
+This construction creates sample-relative categories. Consequently, an Immune-high spot in 17B5776 is not necessarily equivalent in absolute immune fraction to an Immune-high spot in 19H1257. The labels support within-section spatial description, not a shared biological cutoff or clinical classification. The contingency table checks the resulting category counts.
+
 ```{r}
 # Reset the immune status
 fractions_combined$immune_status <- NA_character_
@@ -648,6 +722,10 @@ table(
 names(spacet_17@input)
 head(spacet_17@input$spotCoordinates)
 ```
+
+## Match niche labels to spatial coordinates
+
+For each sample, spot barcodes are used to match the quartile-derived labels to SpaCET pixel coordinates. The output tables contain the plotting coordinates and immune status for every matched spot; the missing-value checks are intended to reveal barcode mismatches before plotting.
 
 ```{r}
 # Extract spatial coordinates
@@ -700,6 +778,10 @@ immune_map_19 <- data.frame(
 
 sum(is.na(immune_map_19$immune_status))
 ```
+
+## Spatial mapping of sample-relative immune niches
+
+The following maps display Immune-low, Intermediate and Immune-high spots in tissue-coordinate space. Reversing the y-axis aligns the coordinate orientation used for plotting. Spatial aggregation of a category is an observation about this section; possible biological explanations remain hypotheses unless supported by histology or independent measurements.
 
 ```{r}
 library(ggplot2)
@@ -798,6 +880,14 @@ immune_status_plot_19 <- ggplot(
 immune_status_plot_19
 ```
 
+The maps can reveal whether sample-relative immune categories form localized or dispersed patterns. They do not establish cellular contact, migration or functional interaction, and spots remain mixed multicellular observations.
+
+## Relative immune-lineage composition of Immune-high niches
+
+**Objective and calculation.** Restrict the combined table to Immune-high spots, then divide each major immune-lineage fraction by that spot's total immune fraction. This converts absolute estimated fractions into within-immune relative shares. The shares are averaged across Immune-high spots separately for each sample and displayed as a stacked composition plot and percentage table.
+
+Only the major immune lineages are used in both numerator and denominator, keeping the hierarchy internally consistent. A larger relative share means that a lineage contributes more of the estimated immune signal in these selected spots; it does not imply a larger absolute fraction, a greater number of cells or enrichment relative to Immune-low spots.
+
 ```{r}
 # Keep only immune-high spots
 immune_high_spots <- fractions_combined[
@@ -842,6 +932,8 @@ rownames(immune_niche_composition) <- NULL
 immune_niche_composition
 ```
 
+The stacked bars describe the average composition of sample-relative Immune-high niches. Since the qualifying threshold is defined separately per sample and spot-level proportions are compositional, cross-sample contrasts are descriptive and may be influenced by changes in other lineages.
+
 ```{r}
 immune_composition_plot <- ggplot(
   immune_niche_composition,
@@ -883,6 +975,10 @@ immune_niche_composition[
   c("sample", "cell_type", "percentage")
 ]
 ```
+
+## Export analysis products
+
+The final block creates the existing output directories and writes the updated objects, spot-level and summary tables, and figures. No new calculations are introduced here; these files preserve the documented results for downstream use.
 ```{r}
 # Create output directories if needed
 dir.create(
@@ -1025,7 +1121,13 @@ ggsave(
 )
 ```
 
+## Limitations
 
-
+- SpaCET estimates transcriptional fractions from reference signatures; estimates depend on signature specificity, RNA content and model assumptions and are not exact cell counts.
+- Visium spots can contain multiple cells, so niche labels and lineage signals describe mixed spatial observations.
+- Major and subordinate SpaCET hierarchy levels overlap and must not be summed. The analysis consistently uses the listed major immune lineages to derive total immune signal.
+- Quartile thresholds are sample-specific. Immune-high and Immune-low are relative labels and do not impose comparable absolute cutoffs across samples.
+- Spots from the same tissue section are spatially correlated and are not independent biological replicates.
+- Only two biological samples are included; all cross-sample comparisons are descriptive and cannot support clinical or population-level conclusions.
 
 

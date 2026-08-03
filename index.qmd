@@ -1,0 +1,171 @@
+---
+title: "Spatial organization of malignant and immune compartments in HNSCC"
+description: "An end-to-end Visium analysis across two HNSCC tissue sections."
+page-layout: full
+toc: false
+---
+
+::: {.hero-panel}
+::: {.hero-kicker}
+SPATIAL TRANSCRIPTOMICS · PORTFOLIO PROJECT
+:::
+
+# How are malignant and immune compartments spatially organized across two HNSCC tissue sections? {.hero-title}
+
+This project combines sample-level Seurat analysis, reciprocal PCA integration and SpaCET deconvolution to describe spatial transcriptional domains and sample-relative immune niches in two 10x Genomics Visium sections.
+
+::: {.hero-actions}
+[Explore results](results.qmd){.btn .btn-primary .btn-lg}
+[Review methods](methods.qmd){.btn .btn-outline-primary .btn-lg}
+[Read the scientific report](reports/HNSCC_spatial_transcriptomics_report.html){.btn .btn-outline-secondary .btn-lg}
+:::
+:::
+
+::: {.callout-important appearance="simple" icon=false}
+## Scope at a glance
+
+The project contains **two biological samples**. Cross-sample comparisons are descriptive, spots within each section are not independent biological replicates, and SpaCET fractions are transcriptional estimates rather than exact cell counts.
+:::
+
+## Project at a glance
+
+::: {.grid .glance-grid}
+::: {.card .feature-card}
+::: {.card-body}
+### 2 tissue sections
+
+HNSCC Visium samples **17B5776** and **19H1257**, analyzed independently before joint comparison.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### 4 analysis stages
+
+Quality control, individual clustering, RPCA integration and spatial deconvolution.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Sample-relative niches
+
+Immune-high and Immune-low spots are defined from quartiles calculated separately within each section.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Reproducible outputs
+
+Saved objects, marker tables, SpaCET summaries, spatial figures and a scientific report support the portfolio narrative.
+:::
+:::
+:::
+
+## Computational workflow
+
+::: {.workflow-grid}
+::: {.workflow-step}
+<span class="step-number">01</span>
+
+### Import and QC
+
+Load Space Ranger counts and tissue coordinates; inspect spot-level transcript, feature and mitochondrial metrics.
+:::
+
+::: {.workflow-step}
+<span class="step-number">02</span>
+
+### Normalize and cluster
+
+Apply SCTransform, PCA, graph-based clustering and marker-guided spatial-domain assessment within each sample.
+:::
+
+::: {.workflow-step}
+<span class="step-number">03</span>
+
+### Integrate samples
+
+Use a joint representation and RPCA integration to describe shared and sample-associated transcriptional structure.
+:::
+
+::: {.workflow-step}
+<span class="step-number">04</span>
+
+### Resolve compartments
+
+Use SpaCET to estimate malignant, stromal and immune fractions, then map sample-relative immune niches.
+:::
+:::
+
+## Selected findings
+
+::: {.grid .finding-grid}
+::: {.card .result-card}
+![Spatial expression of selected lineage- and state-associated markers in 17B5776.](results/figures/17B5776_spatial_marker_validation.png){.card-img-top .lightbox}
+
+::: {.card-body}
+### Spatial transcriptional heterogeneity
+
+**Observation.** Sample 17B5776 contains spatially organized marker programs associated with immune, epithelial, stromal, hypoxic, inflammatory, interferon-responsive and proliferative domains.
+
+**Interpretation.** These are provisional mixed-spot domain annotations, not pure cell types or formally defined malignant states.
+:::
+:::
+
+::: {.card .result-card}
+![Estimated total immune-fraction distributions across the two HNSCC tissue sections.](results/figures/spacet_immune_fraction_distribution.png){.card-img-top .lightbox}
+
+::: {.card-body}
+### Contrasting immune distributions
+
+**Observation.** The saved SpaCET summary reports a higher median derived immune fraction in 17B5776 than in 19H1257.
+
+**Interpretation.** This is a descriptive contrast between two sampled sections and cannot be generalized to an HNSCC population.
+:::
+:::
+:::
+
+::: {.callout-note appearance="simple"}
+## What remains unresolved
+
+The current workflow characterizes malignant fractions and immune niches, but it does **not** formally identify distinct malignant transcriptional states. Estimated malignant fractions and epithelial marker patterns should not be presented as a completed malignant-state analysis.
+:::
+
+## Explore the project
+
+::: {.grid .link-grid}
+::: {.card .link-card}
+::: {.card-body}
+### [Results](results.qmd)
+
+Spatial figures, compartment summaries, sample comparisons and downloadable result tables.
+:::
+:::
+
+::: {.card .link-card}
+::: {.card-body}
+### [Methods](methods.qmd)
+
+Dataset, QC, normalization, clustering, integration, SpaCET and niche definitions.
+:::
+:::
+
+::: {.card .link-card}
+::: {.card-body}
+### [Full scientific report](reports/HNSCC_spatial_transcriptomics_report.html)
+
+Full portfolio-ready scientific narrative with limitations and reproducibility details.
+:::
+:::
+
+::: {.card .link-card .link-unavailable}
+::: {.card-body}
+### GitHub
+
+Project repository URL is not configured in the current Git checkout. Add the verified repository URL before publication.
+:::
+:::
+:::
+

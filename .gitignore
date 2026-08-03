@@ -1,11 +1,58 @@
-data/raw/
-data/external/
-
-results/objects/
-
+# R session files
 .Rhistory
 .RData
+.Ruserdata
 .Rproj.user/
-
+*.nb.html
+# R package environments
 renv/library/
 renv/staging/
+renv/local/
+renv/python/
+renv/sandbox/
+
+# Keep these renv files tracked
+!renv/activate.R
+!renv/settings.json
+!renv.lock
+
+# Quarto temporary and generated files
+.quarto/
+.quarto-runtime/
+_site/
+
+# R Markdown temporary files
+*_cache/
+*_files/
+*.utf8.md
+*.knit.md
+
+# Raw and processed biological data
+data/raw/
+data/processed/
+
+# Large serialized analysis objects
+results/objects/
+
+# Temporary outputs
+tmp/
+temp/
+logs/
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment variables and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Python temporary files
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+_freeze/

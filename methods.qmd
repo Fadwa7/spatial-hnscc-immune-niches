@@ -1,0 +1,144 @@
+---
+title: "Methods"
+description: "Computational methods, assumptions and limitations for the two-sample HNSCC Visium study."
+page-layout: article
+---
+
+## Dataset
+
+The dataset comprises two biological HNSCC Visium tissue sections, 17B5776 and 19H1257. Filtered Space Ranger expression matrices, tissue images and spatial coordinates were imported separately. The unit of observation is the Visium **spot**, which may contain multiple cells.
+
+The analysis order was:
+
+1. sample-level quality control;
+2. SCTransform normalization and dimensionality reduction;
+3. sample-level graph clustering and marker assessment;
+4. cross-sample RPCA integration;
+5. SpaCET deconvolution and descriptive immune-niche analysis.
+
+## Quality control
+
+Spot-level QC considered total transcripts, detected genes and mitochondrial transcript percentage in both distributional and spatial contexts. The existing filtering criteria retained spots with more than 200 detected genes and less than 10% mitochondrial transcripts. Genes detected in fewer than three retained spots were removed.
+
+These thresholds reduce very low-complexity observations but cannot distinguish technical loss from genuinely sparse, damaged or compositionally distinct tissue. Spatial localization was therefore considered when interpreting exclusions.
+
+## SCTransform normalization
+
+Each quality-controlled sample was normalized independently with Seurat's SCTransform workflow using the existing parameters and variable-feature behavior. PCA was run on the SCT assay, and the first 15 principal components were selected from the documented elbow-plot assessment for sample-level neighbor graphs and UMAP.
+
+SCTransform was not rerun for this website. The site reuses existing figures, tables and documented results.
+
+## Graph-based clustering
+
+Graph clustering was evaluated over the existing resolution grid from 0.1 to 1.0. Cluster transitions, UMAP representations, tissue-coordinate maps and marker profiles informed the working solutions:
+
+- **17B5776:** resolution 0.6;
+- **19H1257:** resolution 0.8.
+
+Marker tests used the SCT assay and the existing Wilcoxon settings. Cluster annotations describe enriched spatial transcriptional domains, not pure cell populations. UMAP and clustering share PCA-derived neighborhood information and are not independent validations.
+
+## RPCA integration
+
+The two sample objects were merged after metadata harmonization. Variable features from both samples were combined for a joint PCA, and the first 20 components were used in the joint and integrated workflows. Seurat RPCA integration created the `integrated.rpca` representation, followed by an integrated neighbor graph, UMAP and resolution-0.6 clustering.
+
+The non-integrated representation preserves all sources of variation, including biological and technical differences. RPCA aims to align comparable transcriptional profiles but may retain residual technical structure or reduce genuine sample-specific signals. Integrated comparisons are therefore descriptive.
+
+## SpaCET deconvolution
+
+SpaCET was applied independently to both quality-controlled Visium count matrices using the HNSC cancer model and the existing parameters. It estimates malignant, stromal and immune transcriptional contributions from reference signatures.
+
+::: {.callout-important appearance="simple"}
+SpaCET fractions are estimated transcriptional fractions, **not exact cell counts**. Estimates depend on signature specificity, RNA content, tissue context and model assumptions.
+:::
+
+The combined spot table retained major categories only: Malignant, CAF, Endothelial, Plasma, B cell, T CD4, T CD8, NK, cDC, pDC, Macrophage, Mast, Neutrophil and Unidentifiable. Major and subordinate SpaCET lineages were not summed because the hierarchy overlaps and would otherwise be double-counted.
+
+## Immune-niche definition
+
+The total immune fraction was derived by summing these major immune categories:
+
+- Plasma and B cell;
+- T CD4 and T CD8;
+- NK;
+- cDC and pDC;
+- Macrophage;
+- Mast;
+- Neutrophil.
+
+Spots were classified independently within each sample:
+
+| Category | Sample-specific definition |
+|:--|:--|
+| Immune-low | Total immune fraction at or below the first quartile |
+| Intermediate | Total immune fraction between the first and third quartiles |
+| Immune-high | Total immune fraction at or above the third quartile |
+
+These are relative within-section labels. An Immune-high spot in 17B5776 is not necessarily equivalent in absolute immune fraction to an Immune-high spot in 19H1257.
+
+For Immune-high composition, each major immune-lineage fraction was divided by that spot's total immune fraction. Spot-level relative shares were then averaged separately within each sample. A larger share does not imply a greater absolute fraction, more cells or enrichment compared with another niche class.
+
+## Reproducibility
+
+The computational record is organized in four sequential notebooks:
+
+- `notebooks/01_exploration_17B5776.Rmd`
+- `notebooks/02_exploration_19H1257.Rmd`
+- `notebooks/03_cross_sample_comparison.Rmd`
+- `notebooks/04_spacet_deconvolution.Rmd`
+
+Project-relative paths were managed with `here`. The workflow uses Seurat, SpaCET, `ggplot2`, `dplyr`, `tidyr`, `tibble`, `patchwork` and `clustree`. Fixed random seeds were specified for UMAP and clustering where documented. Exact software versions require manual verification before publication.
+
+This static website does not run analysis code. It embeds existing PNG files, links existing CSV/TSV outputs and points to the pre-rendered [scientific report](reports/HNSCC_spatial_transcriptomics_report.html).
+
+## Methodological limitations
+
+::: {.grid .limitation-grid}
+::: {.card .feature-card}
+::: {.card-body}
+### Study design
+
+Only two biological samples are included. Cross-sample contrasts cannot support population-level, clinical or therapeutic conclusions.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Spatial dependence
+
+Spots within a section are spatially correlated and are not independent biological replicates.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Mixed observations
+
+A Visium spot may contain several cells. Cluster and niche labels describe mixed spatial observations.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Deconvolution
+
+SpaCET estimates depend on reference signatures and are not exact cell counts. Hierarchical lineage levels must not be double-counted.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Relative niches
+
+Immune-high and Immune-low use sample-specific quartiles and do not define shared absolute biological thresholds.
+:::
+:::
+
+::: {.card .feature-card}
+::: {.card-body}
+### Unresolved question
+
+Distinct malignant transcriptional states were not formally identified in the current analysis.
+:::
+:::
+:::
+

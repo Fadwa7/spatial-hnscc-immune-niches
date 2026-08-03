@@ -4,10 +4,15 @@ output: html_document
 
 ---
 
-# Objective: 
-This notebook compares the spatial transcriptomic profiles of samples
-17B5776 and 19H1257 to identify shared and sample-specific transcriptional
-programs.
+# Overview
+
+This notebook compares the processed Visium profiles of samples 17B5776 and 19H1257 to describe shared and sample-associated transcriptional programs. Technically, it harmonizes metadata, merges the two Seurat objects, constructs a joint non-integrated representation, applies reciprocal PCA (RPCA) integration, evaluates joint clustering, identifies cluster markers and maps the integrated clusters back to both tissue sections.
+
+The inputs are the sample-specific clustered Seurat objects produced by notebooks 01 and 02. The main output is an integrated Seurat object with joint cluster labels and marker summaries. With only two biological samples, all comparisons are descriptive; spots within each section are spatially correlated and are not independent biological replicates.
+
+## Load sample-level objects and harmonize metadata
+
+**Objective and processing.** Load the existing sample-specific objects, inspect their dimensions and assays, and create consistent sample and individual-cluster metadata. These checks establish that both objects contain the information required for merging without altering their original cluster assignments.
 
 ```{r}
 library(Seurat)
@@ -25,7 +30,7 @@ hnscc_17 <- readRDS(here("results", "objects", "17B5776_clustered_res0.6.rds"))
 hnscc_19 <- readRDS(here("results", "objects", "19H1257_clustered_res0.8.rds"))
 
 
-## Dimension 
+# Inspect object dimensions, assays and metadata before merging.
 dim(hnscc_17)
 dim(hnscc_19)
 
@@ -76,7 +81,7 @@ Assays(hnscc_merged)
 Images(hnscc_merged)
   
   
-## Commun PCA 
+# Construct a common PCA representation.
 
 DefaultAssay(hnscc_merged) <- "SCT"
 
@@ -107,6 +112,10 @@ ElbowPlot(
 )
   
 ```
+
+## Joint non-integrated representation
+
+**Objective and processing.** Merge both objects, combine their previously selected variable features and run a joint PCA on the SCT assay. The first 20 joint components are used for a neighbor graph and UMAP that retain sample-associated as well as shared variation. This representation provides a diagnostic view before integration; it is not used to claim that observed separation is exclusively biological.
 
 ```{r}
 # Build the shared neighbor graph 
@@ -152,6 +161,10 @@ hnscc_integrated <- IntegrateLayers(
 
 Reductions(hnscc_integrated)
 ```
+
+## RPCA integration and joint embedding
+
+**Objective and processing.** Use RPCA anchors to align comparable transcriptional states between the two SCT-normalized samples, then construct a neighbor graph and UMAP in the integrated space. Integration aims to reduce sample-associated technical structure while retaining biological heterogeneity, but it can also attenuate genuine sample-specific differences.
 ```{r}
 # Build a neighbor graph from the RPCA-integrated representation
 hnscc_integrated <- FindNeighbors(
@@ -189,7 +202,13 @@ RPCA integration was then applied to identify comparable transcriptional profile
 
 Both representations were retained: the non-integrated space to preserve global inter-patient differences, and the RPCA-integrated space to investigate shared transcriptional programs and perform joint clustering.
 
+The degree of visual mixing is a diagnostic outcome, not proof that batch effects have been fully removed or that mixed spots are biologically equivalent.
 
+
+
+## Integrated clustering and resolution selection
+
+**Objective and processing.** Test the existing clustering resolutions on the RPCA shared-nearest-neighbor graph, inspect cluster transitions and use resolution 0.6 as the working joint partition. The UMAP views and sample-by-cluster table describe cluster structure and the contribution of each tissue section.
 
 ```{r}
 library(clustree)
@@ -265,6 +284,14 @@ Most integrated clusters contained spots from both samples, indicating the prese
 Clusters 1, 5, and 6 showed a relatively balanced contribution from both patients. Other clusters were shared but enriched in one sample. Clusters 0 and 13 were predominantly associated with 19H1257, whereas clusters 11, 14, and 15 were predominantly associated with 17B5776.
 
 The integrated clustering therefore preserved both shared and patient-specific transcriptional structures.
+
+These counts reflect the sampled areas and spot composition of two sections. A sample-enriched cluster may represent biological difference, tissue sampling, technical variation or incomplete alignment; it should not be interpreted as prevalence in a patient population.
+
+## Integrated-cluster marker identification
+
+**Objective and output.** Identify positive genes associated with each working integrated cluster using the existing SCT/Wilcoxon settings, select the top five adjusted-significant markers and export both full and abbreviated tables. These markers support descriptive annotation of transcriptional domains.
+
+Marker tests treat spots as observations and therefore do not provide patient-level replication. Spatial autocorrelation, mixed cell content and unequal sample contribution can influence apparent cluster specificity.
 ```{r}
 # Set the integrated clusters as active identities
 DefaultAssay(hnscc_integrated) <- "SCT"
@@ -376,6 +403,8 @@ Canonical marker expression supported the identification of broad epithelial, im
 
 Several clusters showed mixed marker profiles, which is expected because each Visium spot may contain multiple cell types. Cluster identities were therefore interpreted as transcriptionally enriched spatial domains rather than pure cell populations.
 
+The canonical panel is a targeted validation aid rather than an exhaustive reference. Shared or state-dependent expression means that no cluster should be assigned from a single marker alone.
+
 ```{r}
 # Set the joint clusters as active identities
 hnscc_integrated$cluster_integrated <- factor(
@@ -410,6 +439,12 @@ Several clusters were shared between the two samples but differed in their relat
 
 These results indicate that the integrated analysis captured both recurrent transcriptional domains and patient-specific spatial structures.
 
+Spatial coherence is complementary evidence because coordinates were not used in the integrated transcriptomic clustering. It does not, however, establish histological identity or functional interaction without independent validation.
+
+## Save the integrated object
+
+The final block writes the integrated Seurat object, including the working RPCA clustering and tissue images, to the existing output path for downstream analyses.
+
 ```{r}
 # Save the integrated Seurat object
 saveRDS(
@@ -423,7 +458,13 @@ saveRDS(
 
 ```
 
+## Limitations
 
+- The analysis includes only two biological samples, so cross-sample differences are descriptive and cannot be generalized.
+- Spots within a tissue section are spatially correlated and are not independent biological replicates.
+- Each Visium spot may contain multiple cells; integrated clusters represent enriched mixed transcriptional domains.
+- RPCA integration depends on shared features and anchor structure and may either leave residual technical variation or reduce genuine sample-specific signals.
+- Cluster resolution and canonical-marker selection affect interpretation, and marker testing does not replace independent histological or reference-based validation.
 
 
 

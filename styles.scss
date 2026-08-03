@@ -1,0 +1,348 @@
+/*-- scss:defaults --*/
+
+$primary: #102a43;
+$secondary: #c66b5c;
+$link-color: #9f4f44;
+$link-hover-color: #73372f;
+$font-family-sans-serif: "Times New Roman", Times, serif;
+$headings-font-family: "Times New Roman", Times, serif;
+$headings-font-weight: 650;
+$border-radius: 0.65rem;
+$navbar-padding-y: 0.8rem;
+
+/*-- scss:rules --*/
+
+:root {
+  --portfolio-navy: #102a43;
+  --portfolio-navy-soft: #243b53;
+  --portfolio-coral: #c66b5c;
+  --portfolio-coral-soft: #f7e4df;
+  --portfolio-surface: #f7f9fb;
+  --portfolio-card: #ffffff;
+  --portfolio-border: #d9e2ec;
+  --portfolio-text: #243b53;
+  --portfolio-muted: #627d98;
+  --portfolio-shadow: 0 14px 38px rgba(16, 42, 67, 0.08);
+}
+
+.quarto-dark {
+  --portfolio-navy: #d9e8f5;
+  --portfolio-navy-soft: #b6cde0;
+  --portfolio-coral: #ef9a8c;
+  --portfolio-coral-soft: #4a2d2a;
+  --portfolio-surface: #17212b;
+  --portfolio-card: #202d38;
+  --portfolio-border: #3b4f61;
+  --portfolio-text: #e7eef5;
+  --portfolio-muted: #b8c7d4;
+  --portfolio-shadow: 0 14px 38px rgba(0, 0, 0, 0.2);
+}
+
+body {
+  color: var(--portfolio-text);
+  line-height: 1.72;
+  letter-spacing: -0.005em;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--portfolio-navy);
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  margin-top: 3.6rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--portfolio-border);
+}
+
+a {
+  text-underline-offset: 0.18em;
+}
+
+.navbar {
+  box-shadow: 0 2px 18px rgba(16, 42, 67, 0.14);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem auto 3rem;
+  padding: clamp(2.5rem, 6vw, 5.5rem);
+  max-width: 1320px;
+  border: 1px solid var(--portfolio-border);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(198, 107, 92, 0.17), transparent 30%),
+    linear-gradient(135deg, var(--portfolio-surface), var(--portfolio-card));
+  box-shadow: var(--portfolio-shadow);
+}
+
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgba(198, 107, 92, 0.28);
+  border-radius: 50%;
+}
+
+.hero-kicker {
+  margin-bottom: 1.2rem;
+  color: var(--portfolio-coral);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.hero-title {
+  max-width: 1000px;
+  margin-top: 0;
+  border: 0;
+  font-size: clamp(2.3rem, 5vw, 4.7rem);
+  line-height: 1.08;
+}
+
+.hero-panel > p {
+  max-width: 820px;
+  color: var(--portfolio-muted);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  border-radius: 999px;
+  font-weight: 650;
+}
+
+.grid {
+  gap: 1.35rem;
+}
+
+.glance-grid,
+.limitation-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.finding-grid,
+.link-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--portfolio-border);
+  background: var(--portfolio-card);
+  box-shadow: none;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(198, 107, 92, 0.6);
+  box-shadow: var(--portfolio-shadow);
+}
+
+.card-body {
+  padding: 1.45rem;
+}
+
+.feature-card h3,
+.link-card h3,
+.result-card h3 {
+  margin-top: 0;
+}
+
+.result-card .card-img-top {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+  background: #ffffff;
+  border-bottom: 1px solid var(--portfolio-border);
+}
+
+.link-unavailable {
+  border-style: dashed;
+}
+
+.link-unavailable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 3rem;
+}
+
+.workflow-step {
+  position: relative;
+  padding: 1.35rem;
+  border-top: 3px solid var(--portfolio-coral);
+  border-radius: 0 0 0.65rem 0.65rem;
+  background: var(--portfolio-surface);
+}
+
+.workflow-step h3 {
+  margin-top: 0.6rem;
+  font-size: 1.05rem;
+}
+
+.step-number {
+  color: var(--portfolio-coral);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.callout {
+  margin: 1.8rem 0;
+  border-radius: 0.7rem;
+}
+
+.callout.callout-style-simple {
+  border-left-color: var(--portfolio-coral);
+  background: var(--portfolio-surface);
+}
+
+.panel-tabset {
+  margin-top: 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--portfolio-navy);
+  font-weight: 700;
+  border-top: 2px solid var(--portfolio-coral);
+}
+
+figure img,
+.quarto-figure img,
+p > img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+figcaption {
+  color: var(--portfolio-muted);
+  font-size: 0.9rem;
+}
+
+table {
+  font-size: 0.95rem;
+}
+
+thead {
+  color: var(--portfolio-navy);
+  border-bottom: 2px solid var(--portfolio-coral);
+}
+
+.page-footer {
+  margin-top: 5rem;
+  border-top: 1px solid var(--portfolio-border);
+}
+
+@media (max-width: 960px) {
+  .workflow-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .hero-panel {
+    margin-top: 0.5rem;
+    padding: 2rem 1.25rem;
+    border-radius: 0.8rem;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .glance-grid,
+  .finding-grid,
+  .link-grid,
+  .limitation-grid,
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  h2 {
+    margin-top: 2.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+.spacet-workflow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 1rem;
+  align-items: stretch;
+  margin: 2rem 0;
+}
+
+.workflow-step {
+  padding: 1.25rem;
+  border: 1px solid rgba(16, 42, 67, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(16, 42, 67, 0.035);
+}
+
+.workflow-step h3 {
+  margin-top: 0;
+  color: #102a43;
+  font-size: 1.05rem;
+}
+
+.workflow-step p {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.workflow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c66b5c;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .spacet-workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-arrow {
+    transform: rotate(90deg);
+  }
+}
