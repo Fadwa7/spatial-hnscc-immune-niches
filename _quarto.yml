@@ -7,6 +7,10 @@ project:
     - results.qmd
     - methods.qmd
     - reports/HNSCC_spatial_transcriptomics_report.Rmd
+    - notebooks/01_exploration_17B5776.Rmd
+    - notebooks/02_exploration_19H1257.Rmd
+    - notebooks/03_cross_sample_comparison.Rmd
+    - notebooks/04_spacet_deconvolution.Rmd
 
   resources:
     - reports/HNSCC_spatial_transcriptomics_report.html
@@ -16,10 +20,13 @@ project:
 
 website:
   title: "Spatial HNSCC"
-  description: "A two-sample spatial transcriptomics study of malignant and immune compartment organization in HNSCC."
+  description: >
+    A two-sample spatial transcriptomics study of malignant and immune
+    compartment organization in HNSCC.
 
   page-navigation: true
   back-to-top-navigation: true
+  search: true
 
   navbar:
     background: primary
@@ -35,20 +42,38 @@ website:
       - text: "Methods"
         href: methods.qmd
 
+      - text: "Notebooks"
+        menu:
+          - text: "01 · Exploration — 17B5776"
+            href: notebooks/01_exploration_17B5776.Rmd
+
+          - text: "02 · Exploration — 19H1257"
+            href: notebooks/02_exploration_19H1257.Rmd
+
+          - text: "03 · Cross-sample comparison"
+            href: notebooks/03_cross_sample_comparison.Rmd
+
+          - text: "04 · SpaCET deconvolution"
+            href: notebooks/04_spacet_deconvolution.Rmd
+
     right:
       - text: "Full scientific report"
         href: reports/HNSCC_spatial_transcriptomics_report.html
         icon: file-earmark-text
 
+      - icon: github
+        href: "https://github.com/Fadwa7/spatial-hnscc-immune-niches"
+        aria-label: "GitHub repository"
+
   page-footer:
-    left: "Spatial HNSCC immune-niche portfolio project"
+    left: "Fadwa EL KHADDAR · Spatial HNSCC portfolio project"
     right: "Two biological samples · Descriptive analysis"
 
 format:
   html:
     theme:
-     - cosmo
-     - styles.scss
+      - cosmo
+      - styles.scss
 
     toc: true
     toc-depth: 3
