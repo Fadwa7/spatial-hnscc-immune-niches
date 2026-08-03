@@ -56,3 +56,6 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 _freeze/
+
+/.quarto/
+**/*.quarto_ipynb
