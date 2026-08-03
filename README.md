@@ -4,8 +4,8 @@ An independent spatial transcriptomics portfolio project using public 10x Genomi
 
 This repository is designed as a transparent, end-to-end analysis record for bioinformatics engineers, computational biologists and technical recruiters. It connects documented R notebooks, saved analysis objects, reusable result tables, publication-style figures, a Quarto portfolio and a scientific report.
 
-- [View the local Quarto portfolio](_site/index.html)
-- [Read the full scientific report](_site/reports/HNSCC_spatial_transcriptomics_report.html)
+- [Explore the Quarto portfolio](https://fadwa7.github.io/spatial-hnscc-immune-niches/)
+- [Read the full scientific report](https://fadwa7.github.io/spatial-hnscc-immune-niches/reports/HNSCC_spatial_transcriptomics_report.html)
 
 ## Background
 
