@@ -182,8 +182,6 @@ The current lockfile does not yet contain Seurat and SpaCET. Install any missing
 
 ### Prepare the input data
 
-Place the filtered Space Ranger outputs at the locations declared in [`config/samples.tsv`](config/samples.tsv):
-
 ```text
 data/raw/17B5776-1_STonly/17B5776-1-STonly/
 data/raw/19h1257-1_STonly/19h1257-1_v3/
