@@ -1,0 +1,212 @@
+[
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "",
+    "text": "This portfolio project asks: How are malignant and immune compartments spatially organized across two HNSCC tissue sections? Two 10x Genomics Visium samples, 17B5776 and 19H1257, were processed independently, compared in a joint Seurat representation and deconvolved with SpaCET. The workflow combines spot-level quality control, SCTransform normalization, graph-based clustering, reciprocal PCA (RPCA) integration, marker-guided interpretation and spatial deconvolution.\nThe analysis identifies heterogeneous transcriptional domains within the tissue sections and estimates spatial variation in malignant, stromal and immune contributions. In the saved SpaCET summaries, 19H1257 has a higher median estimated malignant fraction than 17B5776, whereas 17B5776 has a higher median derived immune fraction. These are observations from two sections, not population-level effects. Immune-high spots in both samples contain mixed immune signals, with neutrophils providing the largest mean relative share in the saved composition table.\nThe study contains only two biological samples. All cross-sample comparisons are descriptive, and spots from the same section are spatially correlated rather than independent biological replicates. SpaCET estimates transcriptional cell fractions, not exact cell counts. The current analysis characterizes malignant fractions and immune niches, but it does not formally identify distinct malignant transcriptional states; that component of the broader biological motivation remains unresolved."
+  },
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html#sample-17b5776",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html#sample-17b5776",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "Sample 17B5776",
+    "text": "Sample 17B5776\nThe notebook reports 2,582 initial spots and 2,517 retained spots after applying the existing criteria of more than 200 detected genes and less than 10% mitochondrial transcripts. Sixty-five spots were removed. The documented spatial inspection places most excluded spots in a restricted lower-tissue region associated with elevated mitochondrial signal. After spot filtering, genes detected in fewer than three retained spots were removed.\nObservation. Transcript counts, detected genes and mitochondrial percentages varied spatially, and the excluded spots were not uniformly distributed.\nInterpretation. Spatially localized low-complexity or high-mitochondrial signal may reflect technical degradation, local tissue condition or both. The QC metrics alone do not identify the cause."
+  },
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html#sample-19h1257",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html#sample-19h1257",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "Sample 19H1257",
+    "text": "Sample 19H1257\nThe notebook reports 2,216 initial spots. Only one spot met the low-feature exclusion criterion, and no spot exceeded the 10% mitochondrial threshold. Low-feature spots identified during exploratory assessment were concentrated mainly near tissue boundaries.\nObservation. Spot-level filtering had a minimal effect on this section under the selected thresholds.\nInterpretation. The retained section has broadly high transcriptomic complexity under these metrics, but this does not guarantee uniform RNA quality or tissue composition."
+  },
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html#derived-total-immune-fraction",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html#derived-total-immune-fraction",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "Derived total immune fraction",
+    "text": "Derived total immune fraction\nThe total immune fraction was calculated for every spot by summing only the major immune lineage estimates: Plasma, B cell, T CD4, T CD8, NK, cDC, pDC, Macrophage, Mast and Neutrophil. Subordinate SpaCET categories were excluded to avoid double-counting parent and child hierarchy levels. This sum is a derived immune estimate, not an independently fitted cell count.\n\n\n\n\n\n\n\n\n\nDistribution of the derived total immune fraction across spots in each sample. The distributions describe spatial heterogeneity within two tissue sections; spots are not independent biological replicates.\n\n\n\n\n\n\n\nSaved summary of the derived total immune fraction.\n\n\nSample\nMedian\nQ1\nQ3\n\n\n\n\n17B5776\n0.318\n0.122\n0.516\n\n\n19H1257\n0.100\n0.024\n0.237\n\n\n\n\n\nObservation. The median derived immune fraction is higher in 17B5776 than in 19H1257 in the saved summary. Both sections contain substantial within-section variation."
+  },
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html#sample-relative-immune-categories",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html#sample-relative-immune-categories",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "Sample-relative immune categories",
+    "text": "Sample-relative immune categories\nImmune status was defined independently within each tissue section. Spots at or below the sample-specific first quartile of total immune fraction were labelled Immune-low, spots at or above the third quartile were labelled Immune-high, and the remaining spots were labelled Intermediate.\nThese categories are relative within each section. An Immune-high spot in 17B5776 is not necessarily equivalent in absolute immune fraction to an Immune-high spot in 19H1257. The labels are not universal biological thresholds and have no clinical interpretation.\n\n\n\n\n\n\n\n\n\nSample-relative spatial immune niches in 17B5776. Categories are defined from quartiles calculated within this section.\n\n\n\n\n\n\n\n\n\n\n\n\n\nSample-relative spatial immune niches in 19H1257. Categories are defined from quartiles calculated within this section.\n\n\n\n\nObservation. The saved maps show that Immune-high, Intermediate and Immune-low spots are spatially distributed across each section rather than represented by a single section-wide value.\nInterpretation. Local aggregation is consistent with spatial heterogeneity in immune transcriptional contribution. The maps do not establish physical interaction, immune-cell function or movement."
+  },
+  {
+    "objectID": "reports/HNSCC_spatial_transcriptomics_report.html#relative-composition-of-immune-high-niches",
+    "href": "reports/HNSCC_spatial_transcriptomics_report.html#relative-composition-of-immune-high-niches",
+    "title": "Spatial Organization of Malignant and Immune Compartments in Two HNSCC Tissue Sections",
+    "section": "Relative composition of Immune-high niches",
+    "text": "Relative composition of Immune-high niches\nFor each Immune-high spot, each major immune-lineage estimate was divided by that spot’s total immune fraction. These within-immune shares were then averaged separately by sample. A larger share indicates a larger contribution to the estimated immune signal, not a higher absolute fraction or a larger cell count.\n\n\n\n\n\n\n\n\n\nMean relative composition of sample-relative Immune-high spots. The stacked bars show shares of the derived immune signal and not absolute cell abundance.\n\n\n\n\n\n\n\nSaved relative composition of Immune-high spots.\n\n\nSample\nImmune lineage\nMean relative share (%)\n\n\n\n\n17B5776\nNeutrophil\n37.7\n\n\n17B5776\nMacrophage\n18.0\n\n\n17B5776\nT CD4\n16.4\n\n\n17B5776\npDC\n14.1\n\n\n17B5776\nPlasma\n4.4\n\n\n17B5776\ncDC\n3.4\n\n\n17B5776\nB cell\n3.1\n\n\n17B5776\nMast\n1.5\n\n\n17B5776\nT CD8\n0.8\n\n\n17B5776\nNK\n0.5\n\n\n19H1257\nNeutrophil\n32.4\n\n\n19H1257\npDC\n25.3\n\n\n19H1257\nMacrophage\n16.7\n\n\n19H1257\nPlasma\n7.9\n\n\n19H1257\nT CD4\n7.7\n\n\n19H1257\ncDC\n5.7\n\n\n19H1257\nB cell\n3.0\n\n\n19H1257\nMast\n0.9\n\n\n19H1257\nNK\n0.4\n\n\n19H1257\nT CD8\n0.1\n\n\n\n\n\nObservation. Neutrophils have the largest mean relative share in Immune-high spots in both saved sample summaries. Macrophage, T CD4 and pDC signals also contribute materially in 17B5776; pDC and macrophage signals are the next largest shares in 19H1257.\nInterpretation. Immune-high niches contain mixed lineage-associated transcriptional signals. Relative composition is compositional: an increase in one share necessarily changes the others, and it does not demonstrate enrichment relative to Immune-low spots."
+  },
+  {
+    "objectID": "results.html",
+    "href": "results.html",
+    "title": "Results",
+    "section": "",
+    "text": "This results page describes two biological samples. Cross-sample comparisons are descriptive, not inferential. A Visium spot may contain multiple cells, and SpaCET outputs are estimated transcriptional fractions rather than exact cell counts."
+  },
+  {
+    "objectID": "results.html#sample-level-quality-control",
+    "href": "results.html#sample-level-quality-control",
+    "title": "Results",
+    "section": "Sample-level quality control",
+    "text": "Sample-level quality control\n\n17B577619H1257\n\n\nThe notebook reports 2,582 initial spots and 2,517 retained spots after applying the existing criteria of more than 200 detected genes and less than 10% mitochondrial transcripts. Most excluded spots were documented in a restricted lower-tissue region associated with elevated mitochondrial signal. Genes detected in fewer than three retained spots were subsequently removed.\nObservation. Quality metrics and excluded spots were spatially structured rather than uniformly distributed.\nInterpretation. Local low-complexity or high-mitochondrial signal may reflect technical degradation, local tissue condition or both; the QC metrics do not establish the cause.\n\n\nThe notebook reports 2,216 initial spots. It states that one spot met the low-feature exclusion criterion and that none exceeded the 10% mitochondrial threshold. Low-feature candidates were mainly located near tissue boundaries.\nObservation. The selected thresholds had a minimal effect on retained spots in this section.\nVerification note. The notebook’s inline QC text refers to an apparently undefined dim_after_qc object. The stated retained-spot count should be confirmed before publication.\n\n\n\n\n\n\n\n\n\nNo standalone QC figures are currently saved in results/figures/. The QC maps remain embedded in the sample notebooks and are not recreated here."
+  },
+  {
+    "objectID": "results.html#spatial-clustering",
+    "href": "results.html#spatial-clustering",
+    "title": "Results",
+    "section": "Spatial clustering",
+    "text": "Spatial clustering\n\n17B577619H1257\n\n\nResolution 0.6 was selected as the working clustering solution. Marker-guided assessment described mixed spatial domains associated with immune, epithelial, stromal, hypoxic, inflammatory, interferon-responsive and proliferative programs.\n\n\n\nRepresentative lineage- and state-associated marker expression across sample 17B5776.\n\n\nObservation. Several marker programs form localized patterns in the tissue section.\nInterpretation. Spatial localization complements the transcriptomic clustering because coordinates were not used to construct the expression graph. It does not establish pure cell identity or direct cellular interaction.\n\n\nResolution 0.8 was selected after comparison with resolution 0.6. The notebook reports that the finer solution primarily subdivided two clusters and that the resulting groups showed distinct marker profiles.\n\n\n\n\n\n\nNo standalone 19H1257 clustering or marker figure is available in results/figures/; no substitute image is generated."
+  },
+  {
+    "objectID": "results.html#rpca-integration",
+    "href": "results.html#rpca-integration",
+    "title": "Results",
+    "section": "RPCA integration",
+    "text": "RPCA integration\nThe sample-specific objects were merged, represented with a joint PCA and integrated with reciprocal PCA. Integrated resolution-0.6 clusters were used for marker assessment and spatial projection.\nObservation. The cross-sample notebook reports that most integrated clusters contained spots from both samples, while several clusters were enriched in one section. Integrated labels also formed structured domains in tissue space.\nInterpretation. Shared clusters are consistent with recurrent transcriptional programs. Sample-enriched clusters may reflect biological heterogeneity, sampled tissue composition, technical variation or incomplete integration.\n\nIntegrated UMAPSpatial clusters\n\n\n\n\n\nIntegrated RPCA UMAP colored by tissue section and integrated transcriptional cluster.\n\n\n\n\n\n\n\nSpatial distribution of the integrated transcriptional clusters across the two HNSCC tissue sections.\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nRPCA integration can retain technical differences or attenuate genuine sample-specific biology. Visual mixing in the integrated UMAP is not sufficient evidence of complete batch-effect removal.\n\n\nDownload all integrated-cluster markers Download the top-five marker table"
+  },
+  {
+    "objectID": "results.html#spacet-deconvolution",
+    "href": "results.html#spacet-deconvolution",
+    "title": "Results",
+    "section": "SpaCET deconvolution",
+    "text": "SpaCET deconvolution\nSpaCET was run independently for each section with the HNSC cancer model. Major malignant, stromal and immune lineage estimates were extracted into a combined spot-level table. Major and subordinate hierarchy levels were not added together because they overlap and would be double-counted.\n\n1. Spatial counts\nRaw Visium gene-expression counts were processed independently for each tissue section.\n\n\n→\n\n\n2. SpaCET deconvolution\nThe HNSC cancer model was used to estimate malignant, stromal and immune transcriptional contributions for every spatial spot.\n\n\n→\n\n\n3. Spatial niches\nEstimated fractions were summarized and mapped to identify immune-rich and immune-low tissue regions.\n\n\n\n\n\n\n\nSpaCET fractions are estimated transcriptional contributions, not exact cell counts. A larger fraction does not directly imply a corresponding number of cells.\n\n\n\nDownload spot-level SpaCET fractions"
+  },
+  {
+    "objectID": "results.html#major-cell-fraction-comparison",
+    "href": "results.html#major-cell-fraction-comparison",
+    "title": "Results",
+    "section": "Major cell fraction comparison",
+    "text": "Major cell fraction comparison\n\n\n\nMedian estimated fractions and interquartile ranges for selected major compartments in both samples.\n\n\nObservation. The saved summary shows a higher median estimated malignant fraction and a higher median CAF fraction in 19H1257 than in 17B5776. Median endothelial estimates are similar in magnitude.\nInterpretation. These differences describe the two tissue sections and may reflect tissue composition, spatial sampling or model behavior. They are not population-level HNSCC effects.\nDownload the compartment summary"
+  },
+  {
+    "objectID": "results.html#immune-fraction-distributions",
+    "href": "results.html#immune-fraction-distributions",
+    "title": "Results",
+    "section": "Immune-fraction distributions",
+    "text": "Immune-fraction distributions\nThe derived total immune fraction sums only the major immune lineage estimates: Plasma, B cell, T CD4, T CD8, NK, cDC, pDC, Macrophage, Mast and Neutrophil.\n\n\n\nDistributions of the derived total immune fraction across spots in 17B5776 and 19H1257.\n\n\nObservation. The saved summary reports a median derived immune fraction of 0.318 in 17B5776 and 0.100 in 19H1257 after rounding to three decimals.\nInterpretation. The distributions show within-section heterogeneity. Spots are spatially related and must not be treated as independent patient measurements.\nDownload the immune-fraction summary"
+  },
+  {
+    "objectID": "results.html#spatial-immune-niches",
+    "href": "results.html#spatial-immune-niches",
+    "title": "Results",
+    "section": "Spatial immune niches",
+    "text": "Spatial immune niches\nImmune-low, Intermediate and Immune-high categories were defined independently in each sample. Spots at or below the sample-specific first quartile were labelled Immune-low, spots at or above the third quartile were labelled Immune-high, and all remaining spots were labelled Intermediate.\nAn Immune-high spot in one sample is not necessarily equivalent in absolute immune fraction to an Immune-high spot in the other sample.\n\n17B577619H1257\n\n\n\n\n\nSample-relative Immune-low, Intermediate and Immune-high spots in tissue-coordinate space for 17B5776.\n\n\n\n\n\n\n\nSample-relative Immune-low, Intermediate and Immune-high spots in tissue-coordinate space for 19H1257.\n\n\n\n\n\nObservation. The three relative categories are spatially distributed within each section rather than summarized by one section-wide value.\nHypothesis. Local aggregation could reflect heterogeneous immune microenvironments. Testing that hypothesis requires additional samples, histological validation and replicated spatial inference."
+  },
+  {
+    "objectID": "results.html#composition-of-immune-high-niches",
+    "href": "results.html#composition-of-immune-high-niches",
+    "title": "Results",
+    "section": "Composition of Immune-high niches",
+    "text": "Composition of Immune-high niches\nWithin each Immune-high spot, every major immune-lineage fraction was divided by the total immune fraction. The resulting shares were averaged separately by sample.\n\n\n\nMean relative lineage composition of sample-relative Immune-high spots in both tissue sections.\n\n\nObservation. Neutrophils have the largest mean relative share in both saved sample summaries. Macrophage, T CD4 and pDC signals also contribute materially in 17B5776; pDC and macrophage signals are the next largest shares in 19H1257.\nInterpretation. Immune-high niches contain mixed lineage-associated signals. Relative shares do not represent absolute abundance or enrichment compared with Immune-low spots.\nDownload the Immune-high composition table\n\n\n\n\n\n\nNoteMalignant-state scope\n\n\n\nThe current analysis maps estimated malignant fractions and evaluates marker-associated epithelial domains, but it does not formally characterize distinct malignant transcriptional states."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Spatial organization of malignant and immune compartments in HNSCC",
+    "section": "",
+    "text": "SPATIAL TRANSCRIPTOMICS · PORTFOLIO PROJECT\n\n\n\nThis project combines sample-level Seurat analysis, reciprocal PCA integration and SpaCET deconvolution to describe spatial transcriptional domains and sample-relative immune niches in two 10x Genomics Visium sections.\n\nExplore results Review methods Read the scientific report"
+  },
+  {
+    "objectID": "index.html#project-at-a-glance",
+    "href": "index.html#project-at-a-glance",
+    "title": "Spatial organization of malignant and immune compartments in HNSCC",
+    "section": "Project at a glance",
+    "text": "Project at a glance\n\n\n\n2 tissue sections\nHNSCC Visium samples 17B5776 and 19H1257, analyzed independently before joint comparison.\n\n\n\n\n4 analysis stages\nQuality control, individual clustering, RPCA integration and spatial deconvolution.\n\n\n\n\nSample-relative niches\nImmune-high and Immune-low spots are defined from quartiles calculated separately within each section.\n\n\n\n\nReproducible outputs\nSaved objects, marker tables, SpaCET summaries, spatial figures and a scientific report support the portfolio narrative."
+  },
+  {
+    "objectID": "index.html#computational-workflow",
+    "href": "index.html#computational-workflow",
+    "title": "Spatial organization of malignant and immune compartments in HNSCC",
+    "section": "Computational workflow",
+    "text": "Computational workflow\n\n\n01\n\nImport and QC\nLoad Space Ranger counts and tissue coordinates; inspect spot-level transcript, feature and mitochondrial metrics.\n\n\n\n02\n\nNormalize and cluster\nApply SCTransform, PCA, graph-based clustering and marker-guided spatial-domain assessment within each sample.\n\n\n\n03\n\nIntegrate samples\nUse a joint representation and RPCA integration to describe shared and sample-associated transcriptional structure.\n\n\n\n04\n\nResolve compartments\nUse SpaCET to estimate malignant, stromal and immune fractions, then map sample-relative immune niches."
+  },
+  {
+    "objectID": "index.html#selected-findings",
+    "href": "index.html#selected-findings",
+    "title": "Spatial organization of malignant and immune compartments in HNSCC",
+    "section": "Selected findings",
+    "text": "Selected findings\n\n\n\n\n\nSpatial expression of selected lineage- and state-associated markers in 17B5776.\n\n\n\nSpatial transcriptional heterogeneity\nObservation. Sample 17B5776 contains spatially organized marker programs associated with immune, epithelial, stromal, hypoxic, inflammatory, interferon-responsive and proliferative domains.\nInterpretation. These are provisional mixed-spot domain annotations, not pure cell types or formally defined malignant states.\n\n\n\n\n\n\nEstimated total immune-fraction distributions across the two HNSCC tissue sections.\n\n\n\nContrasting immune distributions\nObservation. The saved SpaCET summary reports a higher median derived immune fraction in 17B5776 than in 19H1257.\nInterpretation. This is a descriptive contrast between two sampled sections and cannot be generalized to an HNSCC population.\n\n\n\n\n\n\n\n\n\nNoteWhat remains unresolved\n\n\n\nThe current workflow characterizes malignant fractions and immune niches, but it does not formally identify distinct malignant transcriptional states. Estimated malignant fractions and epithelial marker patterns should not be presented as a completed malignant-state analysis."
+  },
+  {
+    "objectID": "index.html#explore-the-project",
+    "href": "index.html#explore-the-project",
+    "title": "Spatial organization of malignant and immune compartments in HNSCC",
+    "section": "Explore the project",
+    "text": "Explore the project\n\n\n\nResults\nSpatial figures, compartment summaries, sample comparisons and downloadable result tables.\n\n\n\n\nMethods\nDataset, QC, normalization, clustering, integration, SpaCET and niche definitions.\n\n\n\n\nFull scientific report\nFull portfolio-ready scientific narrative with limitations and reproducibility details.\n\n\n\n\nGitHub\nProject repository URL is not configured in the current Git checkout. Add the verified repository URL before publication."
+  },
+  {
+    "objectID": "methods.html",
+    "href": "methods.html",
+    "title": "Methods",
+    "section": "",
+    "text": "The dataset comprises two biological HNSCC Visium tissue sections, 17B5776 and 19H1257. Filtered Space Ranger expression matrices, tissue images and spatial coordinates were imported separately. The unit of observation is the Visium spot, which may contain multiple cells.\nThe analysis order was:\n\nsample-level quality control;\nSCTransform normalization and dimensionality reduction;\nsample-level graph clustering and marker assessment;\ncross-sample RPCA integration;\nSpaCET deconvolution and descriptive immune-niche analysis."
+  },
+  {
+    "objectID": "methods.html#dataset",
+    "href": "methods.html#dataset",
+    "title": "Methods",
+    "section": "",
+    "text": "The dataset comprises two biological HNSCC Visium tissue sections, 17B5776 and 19H1257. Filtered Space Ranger expression matrices, tissue images and spatial coordinates were imported separately. The unit of observation is the Visium spot, which may contain multiple cells.\nThe analysis order was:\n\nsample-level quality control;\nSCTransform normalization and dimensionality reduction;\nsample-level graph clustering and marker assessment;\ncross-sample RPCA integration;\nSpaCET deconvolution and descriptive immune-niche analysis."
+  },
+  {
+    "objectID": "methods.html#quality-control",
+    "href": "methods.html#quality-control",
+    "title": "Methods",
+    "section": "Quality control",
+    "text": "Quality control\nSpot-level QC considered total transcripts, detected genes and mitochondrial transcript percentage in both distributional and spatial contexts. The existing filtering criteria retained spots with more than 200 detected genes and less than 10% mitochondrial transcripts. Genes detected in fewer than three retained spots were removed.\nThese thresholds reduce very low-complexity observations but cannot distinguish technical loss from genuinely sparse, damaged or compositionally distinct tissue. Spatial localization was therefore considered when interpreting exclusions."
+  },
+  {
+    "objectID": "methods.html#sctransform-normalization",
+    "href": "methods.html#sctransform-normalization",
+    "title": "Methods",
+    "section": "SCTransform normalization",
+    "text": "SCTransform normalization\nEach quality-controlled sample was normalized independently with Seurat’s SCTransform workflow using the existing parameters and variable-feature behavior. PCA was run on the SCT assay, and the first 15 principal components were selected from the documented elbow-plot assessment for sample-level neighbor graphs and UMAP.\nSCTransform was not rerun for this website. The site reuses existing figures, tables and documented results."
+  },
+  {
+    "objectID": "methods.html#graph-based-clustering",
+    "href": "methods.html#graph-based-clustering",
+    "title": "Methods",
+    "section": "Graph-based clustering",
+    "text": "Graph-based clustering\nGraph clustering was evaluated over the existing resolution grid from 0.1 to 1.0. Cluster transitions, UMAP representations, tissue-coordinate maps and marker profiles informed the working solutions:\n\n17B5776: resolution 0.6;\n19H1257: resolution 0.8.\n\nMarker tests used the SCT assay and the existing Wilcoxon settings. Cluster annotations describe enriched spatial transcriptional domains, not pure cell populations. UMAP and clustering share PCA-derived neighborhood information and are not independent validations."
+  },
+  {
+    "objectID": "methods.html#rpca-integration",
+    "href": "methods.html#rpca-integration",
+    "title": "Methods",
+    "section": "RPCA integration",
+    "text": "RPCA integration\nThe two sample objects were merged after metadata harmonization. Variable features from both samples were combined for a joint PCA, and the first 20 components were used in the joint and integrated workflows. Seurat RPCA integration created the integrated.rpca representation, followed by an integrated neighbor graph, UMAP and resolution-0.6 clustering.\nThe non-integrated representation preserves all sources of variation, including biological and technical differences. RPCA aims to align comparable transcriptional profiles but may retain residual technical structure or reduce genuine sample-specific signals. Integrated comparisons are therefore descriptive."
+  },
+  {
+    "objectID": "methods.html#spacet-deconvolution",
+    "href": "methods.html#spacet-deconvolution",
+    "title": "Methods",
+    "section": "SpaCET deconvolution",
+    "text": "SpaCET deconvolution\nSpaCET was applied independently to both quality-controlled Visium count matrices using the HNSC cancer model and the existing parameters. It estimates malignant, stromal and immune transcriptional contributions from reference signatures.\n\n\n\n\n\n\nSpaCET fractions are estimated transcriptional fractions, not exact cell counts. Estimates depend on signature specificity, RNA content, tissue context and model assumptions.\n\n\n\nThe combined spot table retained major categories only: Malignant, CAF, Endothelial, Plasma, B cell, T CD4, T CD8, NK, cDC, pDC, Macrophage, Mast, Neutrophil and Unidentifiable. Major and subordinate SpaCET lineages were not summed because the hierarchy overlaps and would otherwise be double-counted."
+  },
+  {
+    "objectID": "methods.html#immune-niche-definition",
+    "href": "methods.html#immune-niche-definition",
+    "title": "Methods",
+    "section": "Immune-niche definition",
+    "text": "Immune-niche definition\nThe total immune fraction was derived by summing these major immune categories:\n\nPlasma and B cell;\nT CD4 and T CD8;\nNK;\ncDC and pDC;\nMacrophage;\nMast;\nNeutrophil.\n\nSpots were classified independently within each sample:\n\n\n\n\n\n\n\nCategory\nSample-specific definition\n\n\n\n\nImmune-low\nTotal immune fraction at or below the first quartile\n\n\nIntermediate\nTotal immune fraction between the first and third quartiles\n\n\nImmune-high\nTotal immune fraction at or above the third quartile\n\n\n\nThese are relative within-section labels. An Immune-high spot in 17B5776 is not necessarily equivalent in absolute immune fraction to an Immune-high spot in 19H1257.\nFor Immune-high composition, each major immune-lineage fraction was divided by that spot’s total immune fraction. Spot-level relative shares were then averaged separately within each sample. A larger share does not imply a greater absolute fraction, more cells or enrichment compared with another niche class."
+  },
+  {
+    "objectID": "methods.html#reproducibility",
+    "href": "methods.html#reproducibility",
+    "title": "Methods",
+    "section": "Reproducibility",
+    "text": "Reproducibility\nThe computational record is organized in four sequential notebooks:\n\nnotebooks/01_exploration_17B5776.Rmd\nnotebooks/02_exploration_19H1257.Rmd\nnotebooks/03_cross_sample_comparison.Rmd\nnotebooks/04_spacet_deconvolution.Rmd\n\nProject-relative paths were managed with here. The workflow uses Seurat, SpaCET, ggplot2, dplyr, tidyr, tibble, patchwork and clustree. Fixed random seeds were specified for UMAP and clustering where documented. Exact software versions require manual verification before publication.\nThis static website does not run analysis code. It embeds existing PNG files, links existing CSV/TSV outputs and points to the pre-rendered scientific report."
+  },
+  {
+    "objectID": "methods.html#methodological-limitations",
+    "href": "methods.html#methodological-limitations",
+    "title": "Methods",
+    "section": "Methodological limitations",
+    "text": "Methodological limitations\n\n\n\nStudy design\nOnly two biological samples are included. Cross-sample contrasts cannot support population-level, clinical or therapeutic conclusions.\n\n\n\n\nSpatial dependence\nSpots within a section are spatially correlated and are not independent biological replicates.\n\n\n\n\nMixed observations\nA Visium spot may contain several cells. Cluster and niche labels describe mixed spatial observations.\n\n\n\n\nDeconvolution\nSpaCET estimates depend on reference signatures and are not exact cell counts. Hierarchical lineage levels must not be double-counted.\n\n\n\n\nRelative niches\nImmune-high and Immune-low use sample-specific quartiles and do not define shared absolute biological thresholds.\n\n\n\n\nUnresolved question\nDistinct malignant transcriptional states were not formally identified in the current analysis."
+  }
+]
