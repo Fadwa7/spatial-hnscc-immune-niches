@@ -2,7 +2,7 @@
 
 An independent spatial transcriptomics portfolio project using public 10x Genomics Visium data to describe malignant and immune organization across two HNSCC tissue sections.
 
-This repository is designed as a transparent, end-to-end analysis record for bioinformatics engineers, computational biologists and technical recruiters. It connects documented R notebooks, saved analysis objects, reusable result tables, publication-style figures, 
+This repository is designed as a transparent, end-to-end analysis record for bioinformatics engineers, computational biologists and technical recruiters. It connects documented R notebooks, saved analysis objects, reusable result tables, publication-style figures and a scientific report.
 
 - [Read the full scientific report](https://fadwa7.github.io/spatial-hnscc-immune-niches/reports/HNSCC_spatial_transcriptomics_report.html)
 
@@ -63,7 +63,7 @@ The project analyzes two biological HNSCC tissue sections from a public 10x Geno
 | 17B5776 | 10x Genomics Visium | Filtered Space Ranger expression matrix, tissue image and spatial coordinates | 0.6 | Sample-level analysis, integration and SpaCET deconvolution |
 | 19H1257 | 10x Genomics Visium | Filtered Space Ranger expression matrix, tissue image and spatial coordinates | 0.8 | Sample-level analysis, integration and SpaCET deconvolution |
 
-The repository does not currently document a dataset accession or primary publication. Raw data are excluded from version control and are expected under the paths recorded in [`config/samples.tsv`](config/samples.tsv).
+The data are available from [Zenodo record 13736222](https://zenodo.org/records/13736222). Raw data are excluded from version control and are expected under the paths recorded in [`config/samples.tsv`](config/samples.tsv).
 
 ## Analysis overview
 
@@ -97,7 +97,7 @@ flowchart TD
 
 ## Repository structure
 
-The tree below reflects the current project layout while omitting generated support libraries and individual binary objects for readability.
+The tree below reflects the current repository layout. Local data, saved R objects, generated output and cache directories are omitted for clarity.
 
 ```text
 .
@@ -112,29 +112,22 @@ The tree below reflects the current project layout while omitting generated supp
 ├── config/
 │   ├── config.yaml                  # currently empty
 │   └── samples.tsv                  # sample identifiers and local data paths
-├── data/                            # local raw/external data; not versioned
 ├── notebooks/
 │   ├── 01_exploration_17B5776.Rmd
 │   ├── 02_exploration_19H1257.Rmd
 │   ├── 03_cross_sample_comparison.Rmd
 │   └── 04_spacet_deconvolution.Rmd
+├── renv/
+│   ├── activate.R
+│   └── settings.json
+├── renv.lock
 ├── reports/
 │   └── HNSCC_spatial_transcriptomics_report.Rmd
 ├── results/
 │   ├── figures/                     # exported PNG figures
-│   ├── objects/                     # local RDS analysis objects; not versioned
 │   └── tables/                      # marker and SpaCET summary tables
-├── workflow/
-│   ├── Snakefile
-│   ├── rules/
-│   └── scripts/                     # empty workflow scaffold; not executable
-├── _freeze/                         # cached Quarto execution results
-├── _site/                           # rendered local portfolio
-├── renv.lock
 └── spatial-hnscc-immune-niches.Rproj
 ```
-
-An additional legacy file, `notebooks/01_exploration.Rmd`, is present but is not part of the four-notebook analysis sequence documented in the scientific report.
 
 ## Notebook overview
 
@@ -164,51 +157,68 @@ Representative outputs are available in [`results/figures`](results/figures) and
 - Project-relative paths are handled with the `here` package.
 - Fixed random seeds are specified for UMAP and clustering where documented.
 - Intermediate RDS objects, marker tables, spot-level fractions and summary tables separate expensive computation from reporting.
-- The Quarto site uses frozen execution results and embeds existing PNG, CSV and TSV outputs.
-- [`renv.lock`](renv.lock) records R 4.3.3 and the current reporting environment.
+- [`renv.lock`](renv.lock) records R 4.3.3 and the currently captured R dependencies.
 
 The current `renv.lock` does not include the full analysis stack, notably Seurat and SpaCET. Exact package versions used for the completed analysis therefore require manual verification before full computational reproduction.
 
 ## Installation and usage
 
+This is an R project, so it uses `renv` rather than a Python `venv`. Both serve the same purpose: isolating project dependencies from the user-level environment.
+
 ### Requirements
 
 - R 4.3.3, as recorded in `renv.lock`
-- Quarto for the portfolio website
 - R packages used in the notebooks, including Seurat, SpaCET, `ggplot2`, `dplyr`, `tidyr`, `tibble`, `patchwork`, `clustree`, `hdf5r` and `here`
 - Filtered Space Ranger outputs for both samples at the paths specified in `config/samples.tsv`
 
-Restore the packages currently captured by `renv.lock`:
+### Install the project environment
 
-```r
-install.packages("renv")
-renv::restore()
-```
-
-Because the lockfile does not yet capture all analysis dependencies, verify and install the missing analysis packages separately before running the notebooks.
-
-To inspect the existing portfolio without rerunning the analysis, open `_site/index.html` in a browser or start a local Quarto preview:
+Clone the repository, move into it and restore the isolated R environment:
 
 ```bash
-quarto preview
+git clone <repository-url>
+cd spatial-hnscc-immune-niches
+Rscript -e 'install.packages("renv", repos="https://cloud.r-project.org")'
+Rscript -e 'renv::restore()'
 ```
 
-To render the scientific report from saved tables and figures:
+The current lockfile does not yet contain Seurat and SpaCET. Install any missing analysis dependencies inside the project environment before running the complete workflow, then record them with `renv::snapshot()`.
+
+### Prepare the input data
+
+Place the filtered Space Ranger outputs at the locations declared in [`config/samples.tsv`](config/samples.tsv):
+
+```text
+data/raw/17B5776-1_STonly/17B5776-1-STonly/
+data/raw/19h1257-1_STonly/19h1257-1_v3/
+```
+
+Each directory must contain the filtered expression matrix, tissue image files and spatial coordinates produced by Space Ranger.
+
+### Run the analysis
+
+Execute the notebooks from the repository root in their documented order:
+
+```bash
+Rscript -e "rmarkdown::render('notebooks/01_exploration_17B5776.Rmd')"
+Rscript -e "rmarkdown::render('notebooks/02_exploration_19H1257.Rmd')"
+Rscript -e "rmarkdown::render('notebooks/03_cross_sample_comparison.Rmd')"
+Rscript -e "rmarkdown::render('notebooks/04_spacet_deconvolution.Rmd')"
+```
+
+The notebooks write intermediate objects and final summaries under `results/`. SCTransform, marker detection, RPCA integration and SpaCET deconvolution can be computationally expensive.
+
+After the saved tables and figures are available, generate the scientific report with:
 
 ```bash
 Rscript -e "rmarkdown::render('reports/HNSCC_spatial_transcriptomics_report.Rmd')"
-quarto render
 ```
-
-Run the four notebooks in numerical order only when the raw data and analysis dependencies are available. SCTransform, marker detection, integration and SpaCET deconvolution are computationally more expensive than rendering the portfolio.
-
-The files under `workflow/` are currently empty placeholders and cannot be used to run the analysis with Snakemake.
 
 ## Project status
 
-The exploratory analysis, two-sample RPCA integration, SpaCET deconvolution, immune-niche summaries, saved result tables, portfolio figures, Quarto site and scientific report are present. The project should be considered a documented portfolio analysis rather than a production pipeline or a population-level HNSCC study.
+The exploratory analysis, two-sample RPCA integration, SpaCET deconvolution, immune-niche summaries, saved result tables, portfolio figures and scientific-report source are present. The project should be considered a documented portfolio analysis rather than a production pipeline or a population-level HNSCC study.
 
-Before public release, the data accession, source citation, public repository URL, GitHub Pages URL and complete analysis software environment still need to be documented and verified. The reported retained-spot count for 19H1257 also requires manual confirmation because the notebook refers to an apparently undefined `dim_after_qc` object.
+The complete analysis software environment still needs to be captured in `renv.lock`. The reported retained-spot count for 19H1257 also requires manual confirmation because the notebook refers to an apparently undefined `dim_after_qc` object.
 
 ## Limitations
 
@@ -232,8 +242,8 @@ Future work should remain separate from the completed analysis and could include
 - formally characterizing malignant transcriptional states with an explicitly validated analysis strategy;
 - validating spatial domains and immune niches against tissue histology or independent biological measurements;
 - evaluating spatial autocorrelation and replicated spatial statistics where the expanded study design supports them;
-- completing and testing the workflow scaffold, capturing the full analysis environment and adding automated reproducibility checks;
-- documenting the public dataset accession, primary citation and a permanent public portfolio URL.
+- capturing the full analysis environment and adding automated reproducibility checks;
+- extending the public documentation as the analysis develops.
 
 ## Author
 
