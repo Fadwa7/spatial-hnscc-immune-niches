@@ -102,7 +102,6 @@ The tree below reflects the current repository layout. Local data, saved R objec
 ```text
 .
 ├── README.md
-├── AGENTS.md
 ├── LICENSE
 ├── _quarto.yml
 ├── index.qmd
