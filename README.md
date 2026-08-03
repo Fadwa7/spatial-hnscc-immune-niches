@@ -109,9 +109,6 @@ The tree below reflects the current repository layout. Local data, saved R objec
 ├── methods.qmd
 ├── results.qmd
 ├── styles.scss
-├── config/
-│   ├── config.yaml                  # currently empty
-│   └── samples.tsv                  # sample identifiers and local data paths
 ├── notebooks/
 │   ├── 01_exploration_17B5776.Rmd
 │   ├── 02_exploration_19H1257.Rmd
