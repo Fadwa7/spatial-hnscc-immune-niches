@@ -1,6 +1,5 @@
 # Spatial organization of malignant and immune compartments in HNSCC
 
-An independent spatial transcriptomics portfolio project using public 10x Genomics Visium data to describe malignant and immune organization across two HNSCC tissue sections.
 
 This repository is designed as a transparent, end-to-end analysis record for bioinformatics engineers, computational biologists and technical recruiters. It connects documented R notebooks, saved analysis objects, reusable result tables, publication-style figures and a scientific report.
 
@@ -14,8 +13,6 @@ Head and neck squamous cell carcinoma (HNSCC) contains malignant epithelial, str
 This project uses spatial expression patterns, transcriptome-based clustering and deconvolution to describe tissue organization. It does not infer direct cell-cell interaction, clinical response or causal biological mechanisms.
 
 ## Reference Study and Project Positioning
-
-This independent portfolio project was inspired by the study:
 
 > Adimi Y. et al. *A new spatial multi-omics approach to deeply
 > characterize human cancer tissue using a single tissue section*.
