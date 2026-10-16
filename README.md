@@ -239,6 +239,5 @@ Future work should remain separate from the completed analysis and could include
 
 ## Author
 
-**Fadwa EL KHADDAR**
+Fadwa EL KHADDAR
 
-Independent bioinformatics portfolio project based on public data.
